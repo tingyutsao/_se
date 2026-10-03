@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>金門大學 校務系統（模擬示範版）</title>
+<style>
+:root{
+  --navy:#1b3a6b; --navy-2:#26508f; --navy-3:#eef3fa;
+  --gold:#c8a04a; --gold-2:#f3e6c8;
+  --ink:#1f2733; --muted:#6b7686; --line:#dfe4ec; --bg:#f4f6f9;
+  --ok:#1a7f4b; --warn:#b26a00; --bad:#c0392b; --info:#1c6ea4;
+  --r:8px; --sh:0 1px 3px rgba(20,35,60,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"Microsoft JhengHei","微軟正黑體","PingFang TC","Heiti TC",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:14px; line-height:1.6;
+}
+a{color:var(--navy-2);text-decoration:none}
+button{font-family:inherit;font-size:inherit}
+input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+
+/* ---------- 登入 ---------- */
+#login{min-height:100vh;display:grid;place-items:center;padding:24px;
+  background:linear-gradient(160deg,#16325c 0%,#26508f 55%,#3a6bb0 100%)}
+.login-box{width:100%;max-width:400px;background:#fff;border-radius:14px;
+  box-shadow:0 18px 50px rgba(10,25,50,.35);overflow:hidden}
+.login-head{background:var(--navy);color:#fff;padding:26px 24px;text-align:center;
+  border-bottom:3px solid var(--gold)}
+.login-head h1{margin:0;font-size:20px;letter-spacing:2px}
+.login-head .sub{margin-top:6px;font-size:12px;color:#c9d8ef}
+.login-body{padding:24px}
+.login-body label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px}
+.login-body input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:6px}
+.login-body input:focus{outline:2px solid var(--navy-3);border-color:var(--navy-2)}
+.btn{width:100%;margin-top:22px;padding:11px;border:0;border-radius:6px;cursor:pointer;
+  background:var(--navy);color:#fff;font-size:15px;letter-spacing:1px}
+.btn:hover{background:var(--navy-2)}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--navy-2)}
+.login-msg{margin-top:14px;padding:9px 12px;border-radius:6px;font-size:13px;display:none}
+.login-msg.err{display:block;background:#fdeceb;color:var(--bad);border:1px solid #f6c9c4}
+.login-msg.ok{display:block;background:#e9f7ef;color:var(--ok);border:1px solid #bfe6cd}
+.demo-box{margin-top:18px;border-top:1px dashed var(--line);padding-top:14px;font-size:12px;color:var(--muted)}
+.demo-box b{color:var(--ink)}
+.demo-box button{margin-top:6px;width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;
+  background:#fafbfd;cursor:pointer;font-size:12px;color:var(--navy-2)}
+.demo-box button:hover{background:var(--navy-3)}
+
+/* ---------- 框架 ---------- */
+#app{display:none}
+header.bar{background:var(--navy);color:#fff;display:flex;align-items:center;gap:14px;
+  padding:0 18px;height:54px;box-shadow:var(--sh);position:sticky;top:0;z-index:20}
+header.bar .logo{font-size:16px;font-weight:bold;letter-spacing:2px;white-space:nowrap}
+header.bar .logo span{color:var(--gold)}
+header.bar .semester{margin-left:6px;padding:3px 10px;border:1px solid #4d6ea3;border-radius:999px;
+  font-size:12px;color:#d8e3f4;white-space:nowrap}
+header.bar .spacer{flex:1}
+header.bar .who{font-size:13px;color:#d8e3f4;white-space:nowrap}
+header.bar .who b{color:#fff}
+header.bar button.out{padding:6px 12px;border:1px solid #4d6ea3;background:transparent;color:#d8e3f4;
+  border-radius:6px;cursor:pointer;font-size:13px}
+header.bar button.out:hover{background:#26457a;color:#fff}
+nav.tabs{background:#fff;border-bottom:1px solid var(--line);display:flex;gap:2px;
+  padding:0 12px;overflow-x:auto;position:sticky;top:54px;z-index:19}
+nav.tabs button{border:0;background:transparent;padding:12px 16px;cursor:pointer;color:var(--muted);
+  border-bottom:3px solid transparent;white-space:nowrap;font-size:14px}
+nav.tabs button:hover{color:var(--navy);background:var(--navy-3)}
+nav.tabs button.on{color:var(--navy);font-weight:bold;border-bottom-color:var(--gold)}
+main{padding:20px;max-width:1240px;margin:0 auto}
+footer.foot{text-align:center;color:var(--muted);font-size:12px;padding:22px 10px 30px}
+
+/* ---------- 元件 ---------- */
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:18px}
+.card>h2{margin:0;padding:13px 16px;font-size:15px;border-bottom:1px solid var(--line);
+  background:#fbfcfe;border-radius:var(--r) var(--r) 0 0;display:flex;align-items:center;gap:8px}
+.card>h2 .tag{font-weight:normal;font-size:12px;color:var(--muted);margin-left:auto}
+.card .body{padding:16px}
+.grid{display:grid;gap:18px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{background:#f7f9fc;color:var(--muted);font-weight:normal;font-size:12px;white-space:nowrap}
+tbody tr:hover{background:#fafcff}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.tbl-scroll{overflow-x:auto}
+.mini-btn{padding:4px 10px;border:1px solid var(--line);background:#fff;border-radius:5px;
+  cursor:pointer;color:var(--navy-2);white-space:nowrap}
+.mini-btn:hover{background:var(--navy-3)}
+.mini-btn.danger{color:var(--bad);border-color:#eec4c0}
+.mini-btn.danger:hover{background:#fdeceb}
+.mini-btn[disabled]{opacity:.45;cursor:not-allowed}
+.pill{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;
+  border:1px solid var(--line);background:#f6f8fb;color:var(--muted);white-space:nowrap}
+.pill.req{background:#eaf1fb;color:var(--navy-2);border-color:#c8dbf3}
+.pill.opt{background:#f3f6fa;color:var(--muted)}
+.pill.full{background:#fdeceb;color:var(--bad);border-color:#f6c9c4}
+.pill.ok{background:#e9f7ef;color:var(--ok);border-color:#bfe6cd}
+.pill.wait{background:#fdf4e3;color:var(--warn);border-color:#f2dfb8}
+.pill.no{background:#fdeceb;color:var(--bad);border-color:#f6c9c4}
+.bar-sm{height:6px;background:#eceff4;border-radius:999px;overflow:hidden;min-width:70px;display:inline-block;vertical-align:middle}
+.bar-sm i{display:block;height:100%;background:var(--navy-2)}
+.bar-sm i.full{background:var(--bad)}
+.bar-sm i.tight{background:var(--gold)}
+.stat{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh)}
+.stat .k{font-size:12px;color:var(--muted)}
+.stat .v{font-size:23px;font-weight:bold;color:var(--navy);margin-top:2px;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:12px;font-weight:normal;color:var(--muted);margin-left:4px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:14px}
+.filters .f{display:flex;flex-direction:column;gap:4px}
+.filters label{font-size:12px;color:var(--muted)}
+.filters input,.filters select{padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:#fff}
+.filters input[type=search]{min-width:200px}
+.notice{background:var(--gold-2);border:1px solid #e6d3a2;border-radius:6px;
+  padding:10px 12px;font-size:13px;color:#6b5210;margin-bottom:14px}
+.notice.blue{background:var(--navy-3);border-color:#c8dbf3;color:#1c3f74}
+.empty{text-align:center;color:var(--muted);padding:34px 10px;font-size:13px}
+.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.7}
+label.fld{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
+input.inp,select.inp,textarea.inp{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff}
+input.inp:disabled,select.inp:disabled,textarea.inp:disabled{background:#f4f6f9;color:var(--muted)}
+input.inp:focus,select.inp:focus,textarea.inp:focus{outline:2px solid var(--navy-3);border-color:var(--navy-2)}
+.form-row{margin-bottom:14px}
+.form-act{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.btn-s{padding:9px 20px;border:0;border-radius:6px;background:var(--navy);color:#fff;cursor:pointer}
+.btn-s:hover{background:var(--navy-2)}
+.btn-s[disabled]{opacity:.5;cursor:not-allowed}
+.btn-s.line{background:#fff;color:var(--navy);border:1px solid var(--navy-2)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:2px 18px}
+.kv .r{display:flex;border-bottom:1px dashed var(--line);padding:8px 0;font-size:13px;gap:8px}
+.kv .r .k{color:var(--muted);width:92px;flex:none}
+
+/* ---------- 課表 ---------- */
+.tt{width:100%;border-collapse:separate;border-spacing:4px;min-width:760px}
+.tt th{background:#eef2f8;color:var(--navy);font-size:12px;padding:7px;border-radius:5px;text-align:center}
+.tt th:first-child{width:78px}
+.tt td{height:54px;padding:0;border:0;vertical-align:top}
+.tt .slot{background:#fbfcfe;border:1px solid var(--line);border-radius:5px;text-align:center;padding:4px 2px;
+  color:var(--muted);font-size:11px;line-height:1.35}
+.tt .slot b{display:block;color:var(--navy);font-size:12px}
+.tt .course{border-radius:5px;padding:5px 7px;color:#fff;font-size:12px;line-height:1.4;
+  overflow:hidden;height:100%;cursor:default}
+.tt .course b{display:block;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt .course span{display:block;font-size:11px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* ---------- 公告 ---------- */
+.ann{border-bottom:1px solid var(--line);padding:12px 2px}
+.ann:last-child{border-bottom:0}
+.ann .t{font-weight:bold;color:var(--ink);margin-bottom:3px}
+.ann .m{font-size:12px;color:var(--muted);margin-bottom:6px}
+.ann .c{font-size:13px;color:#3d4757;white-space:pre-wrap}
+.ann.pin .t::before{content:"【置頂】";color:var(--bad)}
+
+/* ---------- Modal / Toast ---------- */
+#mask{position:fixed;inset:0;background:rgba(18,30,50,.45);display:none;place-items:center;z-index:60;padding:20px}
+#mask.on{display:grid}
+.modal{background:#fff;border-radius:10px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal h3{margin:0;padding:15px 18px;font-size:15px;border-bottom:1px solid var(--line)}
+.modal .m-body{padding:18px;font-size:13px;max-height:60vh;overflow:auto;line-height:1.8}
+.modal .m-act{padding:0 18px 18px;display:flex;gap:10px;justify-content:flex-end}
+#toast{position:fixed;left:50%;top:78px;transform:translateX(-50%);z-index:80;display:flex;
+  flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.msg{background:#22334f;color:#fff;padding:9px 18px;border-radius:999px;font-size:13px;
+  box-shadow:0 6px 20px rgba(0,0,0,.25);animation:pop .18s ease-out}
+.msg.err{background:#a5372b}
+.msg.ok{background:#1a7f4b}
+@keyframes pop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@media (max-width:640px){
+  header.bar .semester{display:none}
+  header.bar .who{font-size:12px}
+  main{padding:12px}
+  .card .body{padding:12px}
+}
+@media print{
+  body.printing{background:#fff}
+  body.printing header.bar,body.printing nav.tabs,body.printing footer.foot{display:none!important}
+  body.printing #app{display:block!important}
+  body.printing main{padding:0;max-width:none}
+  body.printing .card{border:0;box-shadow:none;margin:0}
+  body.printing .hint{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 登入畫面 ===== -->
+<div id="login">
+  <div class="login-box">
+    <div class="login-head">
+      <h1>金門大學 校務系統</h1>
+      <div class="sub">National Quemoy University · Student Information System</div>
+    </div>
+    <div class="login-body">
+      <form id="loginForm" autocomplete="off">
+        <label for="acc">學號</label>
+        <input id="acc" placeholder="請輸入 10 碼學號" inputmode="numeric">
+        <label for="pwd">密碼</label>
+        <input id="pwd" type="password" placeholder="請輸入密碼">
+        <button class="btn" type="submit">登 入</button>
+      </form>
+      <div id="loginMsg" class="login-msg"></div>
+      <div class="demo-box">
+        <b>⚠ 本系統為課程作業用之模擬程式，資料皆為虛構。</b>
+        <div style="margin-top:6px">測試帳號：<b>11341001 / kmu1234</b>（王小明，資工三甲）<br>
+          其他：11345002（數學三甲）、11462005（觀光二甲）、11451003（企管二甲），密碼同為 kmu1234</div>
+        <button type="button" id="fillDemo">一鍵填入測試帳號</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 主系統 ===== -->
+<div id="app">
+  <header class="bar">
+    <div class="logo">金門大學<span> 校務系統</span></div>
+    <div class="semester" id="semTag"></div>
+    <div class="spacer"></div>
+    <div class="who" id="whoami"></div>
+    <button class="out" id="logoutBtn">登出</button>
+  </header>
+  <nav class="tabs" id="tabs"></nav>
+  <main id="view"></main>
+  <footer class="foot">
+    本系統為教學模擬用途，所有學生、教師、成績與公告資料均為虛構，<br>
+    請勿輸入真實個資。金門大學校務系統（模擬示範版） v1.0
+  </footer>
+</div>
+
+<div id="mask"><div class="modal"><h3 id="mTitle"></h3><div class="m-body" id="mBody"></div>
+  <div class="m-act"><button class="btn-s line" id="mCancel">取消</button><button class="btn-s" id="mOk">確定</button></div>
+</div></div>
+<div id="toast"></div>
+
+<script>
+/* =========================================================================
+   金門大學校務系統（模擬示範版）
+   純前端單一檔案：無需安裝任何套件，雙擊 index.html 即可使用。
+   資料以 localStorage 保存；資料存取的例外已包在 try/catch 中，
+   在部分瀏覽器以 file:// 開啟且禁用儲存時，會自動退回記憶體模式。
+   ========================================================================= */
+'use strict';
+
+/* ---------------------------------------------------------------- 學期 */
+const TERMS = [
+  { id: '115-1', label: '115學年度第1學期' },
+  { id: '114-2', label: '114學年度第2學期' },
+  { id: '114-1', label: '114學年度第1學期' },
+  { id: '113-2', label: '113學年度第2學期' },
+  { id: '113-1', label: '113學年度第1學期' }
+];
+const NOW_TERM = '115-1';
+
+/* ------------------------------------------------------------ 時段設定 */
+const DAYS = ['一', '二', '三', '四', '五', '六', '日'];
+const PERIODS = [
+  '08:00~08:50', '09:10~10:00', '10:20~11:10', '11:20~12:10',
+  '13:20~14:10', '14:20~15:10', '15:30~16:20', '16:30~17:20'
+];
+const NIGHT = ['18:30~19:20', '19:30~20:20'];
+
+/* ---------------------------------------------------------- 科系資料 */
+const DEPTS = {
+  '41': '資訊工程學系', '42': '財務金融學系', '43': '企業管理學系',
+  '44': '應用數學學系', '45': '應用外語學系', '46': '觀光管理學系',
+  '47': '護理學系', '48': '應用物理學系'
+};
+
+/* ---------------------------------------------------------- 課程資料
+   [代號, 名稱, 學分, 教師, 教室, 上課時間, 名額, 已選, 類別, 系所代號]
+   上課時間格式：空白分隔，例 "1:2-3 4:2-3" = 週一第2~3節、週四第2~3節
+                 夜間課程寫成 "N1:1-2" = 週一(夜)第1~2節                              */
+const COURSES_RAW = [
+  ['CS301', '作業系統',                 3, '黃信誠', '資訊大樓503', '2:1-2 4:1-2',     40, 31, '必修', '41'],
+  ['CS302', '資料庫系統',               3, '吳俊傑', '資訊大樓401', '3:3-4 5:3-4',     42, 36, '必修', '41'],
+  ['CS305', '演算法設計',               3, '張偉哲', '資訊大樓501', '1:5-6 3:5-6',     45, 45, '必修', '41'],
+  ['CS311', '計算機網路',               3, '林淑芬', '資訊大樓402', '1:7-8 3:7-8',     45, 40, '選修', '41'],
+  ['CS312', '人工智慧導論',             3, '鄭文彥', '資訊大樓502', '2:5-6 4:5-6',     35, 34, '選修', '41'],
+  ['CS314', '資訊安全',                 3, '何志遠', '資訊大樓403', '1:7-8 3:7-8',     36, 35, '選修', '41'],
+  ['CS316', '嵌入式系統實作',           2, '王建國', '資訊大樓實驗室C', '3:5-6',       25,  8, '選修', '41'],
+  ['CS318', '網頁程式設計',             2, '蔡明達', '資訊大樓實驗室B', '5:5-6',       30, 12, '選修', '41'],
+  ['CS320', '雲端運算與虛擬化',         2, '林淑芬', '資訊大樓實驗室A', '2:7-8',       25,  6, '選修', '41'],
+  ['CS322', '電腦繪圖',                 2, '何志遠', '資訊大樓401', '5:3-4',         30, 19, '選修', '41'],
+  ['CS324', '深度學習實務',             3, '鄭文彥', '資訊大樓502', '4:7-8',         30, 18, '選修', '41'],
+  ['CS326', '軟體工程實務',             3, '李雅慧', '資訊大樓402', '5:1-2',         40, 22, '選修', '41'],
+  ['CS328', '機器學習導論',             3, '王建國', '資訊大樓501', '3:7-8',         32, 24, '選修', '41'],
+  ['CS330', '離散數學',                 3, '張偉哲', '資訊大樓501', '2:3-4',         46, 39, '選修', '41'],
+  ['CS332', '電腦網路實作',             2, '林淑芬', '資訊大樓實驗室A', '4:3-4',       24, 14, '選修', '41'],
+  ['CS380', '物件導向程式設計',         3, '李雅慧', '資訊大樓402', 'N1:1-2 N2:1-2', 30, 18, '選修', '41'],
+  ['GE101', '大學國文',                 2, '洪月蘭', '綜合教學大樓101', '1:1-2 3:1-2', 90, 62, '通識', '00'],
+  ['GE102', '基礎英文',                 2, '何佩珊', '文大樓205',   '2:5-6 4:5-6',     90, 71, '通識', '00'],
+  ['GE103', '公民與社會',               2, '郭明修', '人文大樓302', '3:3-4 5:3-4',     70, 45, '通識', '00'],
+  ['GE104', '現代史',                   2, '顏立國', '人文大樓305', '4:3-4 2:3-4',     70, 33, '通識', '00'],
+  ['GE105', '體育(籃球)',               0, '陳信良', '田徑場',      '5:7-8',          60, 28, '通識', '00'],
+  ['GE106', '服務學習',                 0, '林佳蓉', '活動中心202', '4:5-6',          40, 15, '通識', '00'],
+  ['GE107', '資訊素養',                 2, '蔡明達', '資訊大樓401', '1:5-6',          50, 41, '通識', '00'],
+  ['GE108', '服務設計與創意思考',       2, '林佳蓉', '設計大樓202', '3:1-2',          45, 27, '通識', '00'],
+  ['GE110', '基礎英文',                 2, '何佩珊', '文大樓501',   'N1:3-4',         25, 12, '通識', '00'],
+  ['GE111', '服務學習',                 0, '林佳蓉', '活動中心202', 'N2:1-2',         20,  6, '通識', '00'],
+  ['MTH301', '微積分進階',             3, '李承恩', '理學大樓201', '2:7-8 4:7-8',     60, 52, '選修', '44'],
+  ['BA301', '會計學',                   3, '葉宗翰', '商管大樓203', '2:1-2 4:1-2',     55, 48, '選修', '43'],
+  ['TOU210', '觀光學',                 3, '周雅雯', '觀光大樓101', '2:7-8 4:7-8',     40, 26, '選修', '46'],
+  ['EN301', '英文寫作',                 2, '何佩珊', '文大樓301',   '4:1-2 2:1-2',     35, 30, '選修', '45'],
+  ['NUR301', '護理研究',               3, '方怡君', '護理大樓102', '5:3-4',          30, 22, '選修', '47']
+];
+
+/* ---------------------------------------------------------- 學生資料 */
+const SEED_USERS = {
+  '11341001': {
+    pwd: 'kmu1234', name: '王小明', deptCode: '41', cls: '資工三甲', gender: '男',
+    phone: '0912-345-678', email: 'wm11341001@kmun.edu.tw',
+    addr: '金門縣金湖鎮山外里北山道99號3樓',
+    contact: { rel: '母親', name: '王淑芬', phone: '0912-000-111' },
+    picked: ['CS301', 'CS302', 'CS312', 'CS314', 'GE104', 'GE105', 'GE107', 'GE108'],
+    required: ['CS101', 'CS103', 'CS201', 'CS204', 'CS301', 'CS302', 'CS305', 'MTH201', 'GE101', 'GE102', 'GE104'],
+    grades: {
+      '114-2': [['CS202', '離散數學', 3, 88], ['CS201', '物件導向程式設計', 3, 92], ['GE107', '資訊素養', 2, 93], ['PE103', '體育', 0, null]],
+      '114-1': [['CS204', '演算法設計', 3, 91], ['CS203', '數位邏輯與電腦組織', 3, 86], ['GE104', '現代史', 2, 83], ['SL101', '服務學習', 0, null]],
+      '113-2': [['CS103', '程式設計', 3, 93], ['MTH201', '微積分', 3, 85], ['GE103', '公民與社會', 2, 86], ['PE102', '體育', 0, null]],
+      '113-1': [['CS101', '計算機概論', 3, 95], ['MTH201', '微積分', 3, 90], ['GE101', '大學國文', 2, 92], ['GE100', '英文', 2, 89]]
+    },
+    leaves: [
+      { id: 'L1140201', type: '病假', start: '2026-06-11', end: '2026-06-12', days: 2, reason: '感冒發燒，醫師建議休息', status: 'approved', applyAt: '2026-06-10 09:12', who: '系上輔導教師 洪月蘭', memo: '已附診斷證明' },
+      { id: 'L1150101', type: '事假', start: '2026-09-18', end: '2026-09-18', days: 1, reason: '返家參加阿嬤壽宴', status: 'pending', applyAt: '2026-09-16 21:40', who: '待系上輔導教師審核', memo: '' }
+    ]
+  },
+  '11345002': {
+    pwd: 'kmu1234', name: '李佩涵', deptCode: '44', cls: '數學三甲', gender: '女',
+    phone: '0933-222-444', email: 'lh11345002@kmun.edu.tw',
+    addr: '金門縣金城鎮民權路55號',
+    contact: { rel: '父親', name: '李國泰', phone: '0933-111-222' },
+    picked: ['MTH301', 'EN301', 'GE102', 'GE103', 'GE104', 'GE105', 'GE111'],
+    required: ['MTH101', 'MTH201', 'MTH301', 'MTH320', 'CS101', 'GE101', 'GE103'],
+    grades: {
+      '114-2': [['MTH301', '微積分進階', 3, 90], ['MTH202', '線性代數', 3, 88], ['GE102', '基礎英文', 2, 91], ['PE103', '體育', 0, null]],
+      '114-1': [['CS201', '演算法設計', 3, 94], ['MTH201', '微積分', 3, 92], ['GE101', '大學國文', 2, 88], ['SL101', '服務學習', 0, null]],
+      '113-2': [['MTH203', '機率論', 3, 87], ['MTH201', '微積分', 3, 89], ['GE103', '公民與社會', 2, 90], ['PE102', '體育', 0, null]],
+      '113-1': [['MTH101', '微積分', 3, 86], ['CS101', '計算機概論', 3, 91], ['GE100', '英文', 2, 84]]
+    },
+    leaves: []
+  },
+  '11462005': {
+    pwd: 'kmu1234', name: '陳志豪', deptCode: '46', cls: '觀光二甲', gender: '男',
+    phone: '0988-777-666', email: 'chen11462005@kmun.edu.tw',
+    addr: '金門縣金沙鎮沙美里榮湖55號',
+    contact: { rel: '姐姐', name: '陳雅婷', phone: '0988-555-444' },
+    picked: ['TOU210', 'GE101', 'GE103', 'GE104', 'GE105', 'GE106', 'GE107'],
+    required: ['TOU101', 'TOU210', 'BA101', 'GE101', 'GE103', 'PE101'],
+    grades: {
+      '114-2': [['TOU210', '觀光學', 3, 86], ['TOU205', '餐旅服務管理', 3, 82], ['GE103', '公民與社會', 2, 88], ['PE102', '體育', 0, null]],
+      '114-1': [['TOU101', '觀光學概論', 3, 90], ['BA101', '管理學', 3, 85], ['GE101', '大學國文', 2, 87]]
+    },
+    leaves: [
+      { id: 'L1150201', type: '病假', start: '2026-10-08', end: '2026-10-08', days: 1, reason: '腸胃炎就醫', status: 'approved', applyAt: '2026-10-07 08:30', who: '系統自動核准（病假 1 日內）', memo: '' }
+    ]
+  },
+  '11451003': {
+    pwd: 'kmu1234', name: '林雅琪', deptCode: '43', cls: '企管二甲', gender: '女',
+    phone: '0955-123-456', email: 'lin11451003@kmun.edu.tw',
+    addr: '金門縣金湖鎮新湖里塔后92號',
+    contact: { rel: '母親', name: '林秀琴', phone: '0955-987-654' },
+    picked: ['BA301', 'GE101', 'GE103', 'GE104', 'GE105', 'GE106', 'GE107'],
+    required: ['BA101', 'BA203', 'BA301', 'EC101', 'EC201', 'GE101', 'GE103'],
+    grades: {
+      '114-2': [['BA301', '會計學', 3, 84], ['BA203', '行銷學', 3, 91], ['GE107', '資訊素養', 2, 90], ['PE102', '體育', 0, null]],
+      '114-1': [['BA101', '管理學', 3, 89], ['EC101', '經濟學', 3, 86], ['GE101', '大學國文', 2, 83], ['SL101', '服務學習', 0, null]]
+    },
+    leaves: []
+  }
+};
+
+/* ------------------------------------------------------------ 公告 */
+const SEED_NEWS = [
+  { id: 'n1', date: '2026-09-01', tag: '選課', pin: true, title: '115學年度第1學期選課系統開放公告',
+    body: '一、正選選課期間：8月26日（一）至8月31日（一），每日 08:00~22:00。\n二、加選／退選截止：10月16日（五）17:00，逾期系統不再開放，敬請把握時效。\n三、每學期修課上限 20 學分；達 18 學分者須填寫「超學分理由」並經導師同意。\n四、如選課有疑問，請洽教務處課務組（分機 2101）。' },
+  { id: 'n2', date: '2026-09-05', tag: '註冊', pin: false, title: '本學期學雜費繳費與註冊須知',
+    body: '學雜費繳費期限至 9月15日（日）止，請至郵政 ATM 或各便利商店繳費。\n完成繳費後仍須至本系統完成「在學證明」列印，始視為完成註冊。' },
+  { id: 'n3', date: '2026-09-12', tag: '資安', pin: false, title: '校園資訊安全與個資法宣導',
+    body: '近期出現多起同學遭釣魚簡訊騙取帳號密碼事件。請勿將校內帳號密碼提供予他人，\n亦不得利用本系統進行非授權之存取。資訊中心網頁安全專區提供辨識指南。' },
+  { id: 'n4', date: '2026-09-20', tag: '圖書館', pin: false, title: '圖書館延長開放時間及假日開放公告',
+    body: '即日起至學期末，圖書館一樓自 07:30 開放至 24:00，週六、日 09:00~17:00 開放。\n自習區採全區免刷卡入館，請共同維持整潔安靜。' },
+  { id: 'n5', date: '2026-09-28', tag: '活動', pin: false, title: '第15屆系上大學盃排球賽報名開始',
+    body: '本屆賽事預計 11月2日至11月6日於綜合體育館舉行，以系所為單位組隊，每系上限 12 人。\n請於10月16日（五）前向體育組完成報名，賽事期間可申請公假。' }
+];
+
+/* ------------------------------------------------------- 規則設定 */
+const RULES = {
+  creditMax: 20,      // 每學期修課上限
+  creditOver: 18,     // 超學分門檻（超過需填理由）
+  addDropDue: '2026-10-16 17:00',
+  leaveTypes: [
+    { v: '病假', need: '須附醫師診斷證明（就診當日上傳）' },
+    { v: '事假', need: '須附家長或監護人同意書' },
+    { v: '公假', need: '須附活動證明或公文，並經系上核章' },
+    { v: '喪假', need: '須附訃聞或相關證明' }
+  ],
+  leaveRules: [
+    { type: '病假', max: 1,  status: 'approved', who: '系統自動核准（病假 1 日內）' },
+    { type: '公假', max: 3,  status: 'approved', who: '系統自動核准（公假 3 日內）' },
+    { type: '喪假', max: 7,  status: 'approved', who: '系統自動核准（喪假 7 日內）' },
+    { type: '病假', max: 5,  status: 'pending',  who: '待系上輔導教師審核' },
+    { type: '事假', max: 3,  status: 'pending',  who: '待系上輔導教師審核' },
+    { type: '病假', max: 99, status: 'pending',  who: '待系上輔導教師及導師審核（超過 5 日）' },
+    { type: '事假', max: 99, status: 'pending',  who: '待系主任及導師審核（超過 3 日）' },
+    { type: '公假', max: 99, status: 'pending',  who: '待系主任審核（超過 3 日）' },
+    { type: '喪假', max: 99, status: 'pending',  who: '待系主任審核（超過 7 日）' }
+  ]
+};
+/* =========================================================================
+   CORE：資料儲存、工具函式、畫面路由
+   ========================================================================= */
+const DB_KEY = 'kmun.sss.v1';
+const SESS_KEY = 'kmun.sss.session';
+
+/* --- 可容忍 localStorage 不可用的環境（例如瀏覽器限制 file:// 儲存） --- */
+const memStore = {};
+const LS = {
+  ok: (function () { try { localStorage.setItem('__t', '1'); localStorage.removeItem('__t'); return true; } catch (e) { return false; } })(),
+  get(k) { try { return LS.ok ? localStorage.getItem(k) : (memStore[k] || null); } catch (e) { return memStore[k] || null; } },
+  set(k, v) { try { if (LS.ok) localStorage.setItem(k, v); else memStore[k] = v; } catch (e) { memStore[k] = v; } }
+};
+const SS = {
+  get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* 忽略 */ } },
+  del(k) { try { sessionStorage.removeItem(k); } catch (e) { /* 忽略 */ } }
+};
+
+/* ---------------------------------------------------------------- DB */
+let db = null;
+
+function seedDB() {
+  const users = {};
+  Object.keys(SEED_USERS).forEach(function (id) {
+    const u = SEED_USERS[id];
+    users[id] = JSON.parse(JSON.stringify({
+      pwd: u.pwd, name: u.name, deptCode: u.deptCode, cls: u.cls, gender: u.gender,
+      phone: u.phone, email: u.email, addr: u.addr, contact: JSON.parse(JSON.stringify(u.contact)),
+      picked: u.picked.slice(), required: u.required.slice(),
+      grades: u.grades, leaves: u.leaves.slice(),
+      extra: {}, overReason: ''   // extra: 個人加選之名額異動；overReason: 超學分理由
+    }));
+  });
+  return { users: users, news: JSON.parse(JSON.stringify(SEED_NEWS)), over: {} };
+}
+
+function loadDB() {
+  const raw = LS.get(DB_KEY);
+  if (raw) {
+    try {
+      const o = JSON.parse(raw);
+      if (o && o.users && Object.keys(o.users).length) { db = o; return; }
+    } catch (e) { /* 資料毀損則重建 */ }
+  }
+  db = seedDB();
+  saveDB();
+}
+function saveDB() { LS.set(DB_KEY, JSON.stringify(db)); }
+function resetDB() { LS.set(DB_KEY, JSON.stringify(seedDB())); db = JSON.parse(LS.get(DB_KEY)); }
+
+let me = null;   // 目前登入者 {id, u}
+function loadSession() {
+  const id = SS.get(SESS_KEY);
+  if (id && db.users[id]) { me = { id: id, u: db.users[id] }; }
+}
+
+/* ------------------------------------------------------- 課程展開 */
+function parseSlots(str) {
+  const out = [];
+  String(str).split(/\s+/).forEach(function (tk) {
+    if (!tk) return;
+    const p = tk.split(':');
+    let d = parseInt(p[0].replace('N', ''), 10);
+    let ev = 0;
+    if (p[0].charAt(0) === 'N') { ev = d; d = 1; }   // 夜間課程統一排在週一欄
+    const a = p[1].split('-');
+    const lo = parseInt(a[0], 10), hi = a.length > 1 ? parseInt(a[1], 10) : lo;
+    const ps = [];
+    for (let i = lo; i <= hi; i++) ps.push(i);
+    out.push({ d: d, ev: ev, p: ps });
+  });
+  return out;
+}
+
+const CATALOG = {};
+const COURSES = COURSES_RAW.map(function (r) {
+  const o = {
+    code: r[0], name: r[1], credit: r[2], teacher: r[3], room: r[4],
+    slots: parseSlots(r[5]), cap: r[6], taken: r[7], type: r[8], dept: r[9],
+    deptName: DEPTS[r[9]] || '通識中心', timeStr: r[5]
+  };
+  CATALOG[o.code] = o;
+  return o;
+});
+function courseOf(code) { return CATALOG[code] || null; }
+
+/* ---------------------------------------------------------- 色彩 */
+const PALETTE = ['#26508f', '#1a7f4b', '#b26a00', '#7b4b9e', '#b0413e',
+                 '#0f766e', '#5b6b8c', '#a1552a', '#3d6b1f', '#9e2a63'];
+function colorOf(code) {
+  let h = 0, i;
+  for (i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0;
+  return PALETTE[h % PALETTE.length];
+}
+
+/* ---------------------------------------------------- 工具函式 */
+function $(s, r) { return (r || document).querySelector(s); }
+function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+function esc(s) {
+  return String(s === null || s === undefined ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function termLabel(id) {
+  const t = TERMS.filter(function (x) { return x.id === id; })[0];
+  return t ? t.label : id;
+}
+function termOf(id) { return TERMS.filter(function (x) { return x.id === id; })[0] || null; }
+function nowStamp() {
+  const d = new Date(), p = function (n) { return n < 10 ? '0' + n : '' + n; };
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+    ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+function uid(prefix) { return prefix + Date.now().toString(36).toUpperCase(); }
+
+/* 時段 */
+function slotText(o) {
+  return o.slots.map(function (s) {
+    const t = s.ev ? '夜間' : '週' + DAYS[s.d - 1];
+    return t + '第' + s.p.join('、') + '節';
+  }).join('／');
+}
+function hasConflict(a, b) {
+  return a.slots.some(function (sa) {
+    return b.slots.some(function (sb) {
+      return sa.d === sb.d && sa.ev === sb.ev && sa.p.some(function (p) { return sb.p.indexOf(p) >= 0; });
+    });
+  });
+}
+function clashList(list, code) {
+  const me0 = courseOf(code);
+  return list.filter(function (c) { return c.code !== code && hasConflict(c, me0); }).map(function (c) { return c.code; });
+}
+
+/* 名額（含各生自行加選之影響） */
+function seatUsed(c) {
+  let n = c.taken;
+  Object.keys(db.over).forEach(function (id) {
+    const u = db.users[id];
+    if (u && u.extra[c.code]) n += u.extra[c.code];
+  });
+  return n;
+}
+function seatLeft(c) { return c.cap - seatUsed(c); }
+function isFull(c) { return seatLeft(c) <= 0; }
+
+/* 學分 */
+function pickedCourses(term) {
+  const list = me.u.picked.filter(function (c) { return !!courseOf(c); });
+  return list.map(courseOf);
+}
+function creditOf(list) {
+  return list.reduce(function (a, c) { return a + c.credit; }, 0);
+}
+function takenCodes(term) {
+  const g = me.u.grades[term] || [], out = {};
+  g.forEach(function (r) { out[r[0]] = 1; });
+  return out;
+}
+function allPassedCodes() {
+  const out = {};
+  TERMS.forEach(function (t) {
+    Object.keys(takenCodes(t.id)).forEach(function (k) { out[k] = 1; });
+  });
+  return out;
+}
+
+/* 成績 */
+function levelOf(score) {
+  if (score === null || score === undefined) return '通過';
+  if (score >= 90) return 'A';
+  if (score >= 85) return 'A-';
+  if (score >= 80) return 'B+';
+  if (score >= 75) return 'B';
+  if (score >= 70) return 'C+';
+  if (score >= 65) return 'C';
+  if (score >= 60) return 'D';
+  if (score >= 50) return 'E';
+  return 'F';
+}
+function avgOf(rows) {
+  let s = 0, c = 0;
+  rows.forEach(function (r) {
+    if (r[3] === null || r[3] === undefined) return;
+    s += r[3] * r[2]; c += r[2];
+  });
+  return c ? s / c : null;
+}
+function creditsOf(rows) {
+  return rows.reduce(function (a, r) { return a + (r[3] === null ? 0 : r[2]); }, 0);
+}
+
+/* 未修必修 */
+function pendingRequired() {
+  const done = allPassedCodes();
+  const cur = {}; pickedCourses().forEach(function (c) { done[c.code] = 1; });
+  return me.u.required.filter(function (code) { return !done[code]; });
+}
+
+/* ---------------------------------------------------- 訊息 / Modal */
+function toast(msg, kind) {
+  const d = document.createElement('div');
+  d.className = 'msg' + (kind ? ' ' + kind : '');
+  d.textContent = msg;
+  $('#toast').appendChild(d);
+  setTimeout(function () { d.style.transition = 'opacity .3s'; d.style.opacity = '0'; }, 2100);
+  setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 2500);
+}
+let modalCb = null;
+function openModal(title, html, cb, okText) {
+  $('#mTitle').textContent = title;
+  $('#mBody').innerHTML = html;
+  $('#mOk').textContent = okText || '確定';
+  modalCb = cb || null;
+  $('#mask').classList.add('on');
+}
+function closeModal() { $('#mask').classList.remove('on'); modalCb = null; }
+
+/* ---------------------------------------------------------- 路由 */
+const TABS = [
+  { id: 'home',  name: '首頁' },
+  { id: 'reg',   name: '選課系統' },
+  { id: 'sched', name: '課表查詢' },
+  { id: 'grade', name: '成績查詢' },
+  { id: 'leave', name: '請假作業' },
+  { id: 'me',    name: '個人資料' }
+];
+const VIEWS = {};
+const BIND = {};
+
+function go(id) {
+  if (!VIEWS[id]) id = 'home';
+  $('#view').innerHTML = VIEWS[id]();
+  if (BIND[id]) BIND[id]();
+  $$('#tabs button').forEach(function (b) { b.classList.toggle('on', b.dataset.tab === id); });
+  try { if (location.hash !== '#/' + id) location.hash = '#/' + id; } catch (e) { /* 忽略 */ }
+  window.scrollTo(0, 0);
+}
+function render() {
+  if (!me) { showLogin(); return; }
+  $('#login').style.display = 'none';
+  $('#app').style.display = 'block';
+  $('#semTag').textContent = termLabel(NOW_TERM);
+  $('#whoami').innerHTML = esc(me.u.name) + '　' + esc(me.id) + '　<span style="opacity:.7">' + esc(me.u.cls) + '</span>';
+  go((location.hash || '').replace('#/', '') || 'home');
+}
+function showLogin() {
+  me = null;
+  SS.del(SESS_KEY);
+  $('#app').style.display = 'none';
+  $('#login').style.display = 'grid';
+  $('#pwd').value = '';
+}
+
+function init() {
+  loadDB();
+  loadSession();
+
+  $('#tabs').innerHTML = TABS.map(function (t) {
+    return '<button data-tab="' + t.id + '">' + t.name + '</button>';
+  }).join('');
+  $('#tabs').addEventListener('click', function (e) {
+    const b = e.target.closest('button[data-tab]');
+    if (b) go(b.dataset.tab);
+  });
+
+  $('#loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const id = $('#acc').value.trim(), pwd = $('#pwd').value;
+    const msg = $('#loginMsg');
+    if (!id || !pwd) { msg.className = 'login-msg err'; msg.textContent = '請輸入學號與密碼。'; return; }
+    const u = db.users[id];
+    if (!u) { msg.className = 'login-msg err'; msg.textContent = '查無此學號，請確認後重新輸入。'; return; }
+    if (u.pwd !== pwd) { msg.className = 'login-msg err'; msg.textContent = '密碼錯誤，請重新輸入。'; return; }
+    msg.className = 'login-msg ok';
+    msg.textContent = '登入成功，正在載入…';
+    me = { id: id, u: u };
+    SS.set(SESS_KEY, id);
+    setTimeout(render, 320);
+  });
+
+  $('#fillDemo').addEventListener('click', function () {
+    $('#acc').value = '11341001';
+    $('#pwd').value = 'kmu1234';
+    $('#loginMsg').className = 'login-msg';
+  });
+
+  $('#logoutBtn').addEventListener('click', function () {
+    if (confirm('確定要登出系統嗎？未送出表單的內容將不會保留。')) showLogin();
+  });
+
+  $('#mCancel').addEventListener('click', closeModal);
+  $('#mask').addEventListener('click', function (e) { if (e.target === this) closeModal(); });
+  $('#mOk').addEventListener('click', function () {
+    const cb = modalCb;
+    if (cb && cb() === false) return;
+    closeModal();
+  });
+
+  window.addEventListener('hashchange', function () {
+    if (me) go((location.hash || '').replace('#/', '') || 'home');
+  });
+
+  if (me) render(); else showLogin();
+}
+/* =========================================================================
+   頁面：首頁儀表板 / 課表查詢
+   ========================================================================= */
+function dueInfo() {
+  const m = String(RULES.addDropDue).match(/(\d+)-(\d+)-(\d+) (\d+):(\d+)/);
+  const end = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+  const diff = end.getTime() - Date.now();
+  return { end: end, left: diff, days: Math.ceil(diff / 86400000) };
+}
+function statBox(k, v, unit) {
+  return '<div class="stat"><div class="k">' + k + '</div><div class="v">' + v +
+    (unit ? '<small>' + unit + '</small>' : '') + '</div></div>';
+}
+
+/* ---------------------------------------------------------- 首頁 */
+VIEWS.home = function () {
+  const list = pickedCourses();
+  const cr = creditOf(list);
+  const pend = pendingRequired();
+  const d = dueInfo();
+  const past = me.u.grades[lastTerm()] || [];
+  const avg = avgOf(past);
+  const leavePending = me.u.leaves.filter(function (l) { return l.status === 'pending'; }).length;
+  const mine = me.u.picked.length;
+
+  const due = d.left > 0
+    ? '<b>加選／退選開放中</b>：距截止（' + esc(RULES.addDropDue.replace(' ', ' ')) + '）尚有 <b>' + d.days + ' 天</b>，'
+      + '逾期系統將自動關閉。'
+    : '<b>加選／退選已截止</b>（' + esc(RULES.addDropDue) + '），如需異動請洽課務組分機 2101。';
+
+  let h = '';
+  h += '<div class="notice' + (d.left > 0 ? '' : ' blue') + '">⏰ ' + due + '</div>';
+
+  /* 統計 */
+  h += '<div class="grid g4" style="margin-bottom:18px">';
+  h += statBox('本學期已選學分', cr, '/ ' + RULES.creditMax + ' 學分');
+  h += statBox('已選課程數', mine, '門');
+  h += statBox('上學期加權平均', avg === null ? '—' : avg.toFixed(2), avg === null ? '' : '分');
+  h += statBox('待審核假單', leavePending, '件');
+  h += '</div>';
+
+  h += '<div class="grid g2">';
+
+  /* 待修課表 */
+  h += '<div class="card"><h2>⚠ 待修課表提醒<span class="tag">共 ' + pend.length + ' 門</span></h2><div class="body">';
+  if (!pend.length) {
+    h += '<div class="empty">🎉 必修科目均已完成，請持續維持良好進度。</div>';
+  } else {
+    h += '<div class="tbl-scroll"><table><thead><tr><th>科目</th><th>類別</th><th>狀況</th><th></th></tr></thead><tbody>';
+    pend.forEach(function (code) {
+      const c = courseOf(code);
+      if (!c) { return; }
+      let why = '<span class="pill wait">本學期未選</span>', can = true;
+      if (isFull(c)) { why = '<span class="pill full">名額已滿</span>'; can = false; }
+      h += '<tr><td><b>' + esc(c.name) + '</b><br><span style="font-size:12px;color:var(--muted)">' +
+        esc(c.code) + '　' + esc(c.credit) + ' 學分　' + esc(c.teacher) + '</span></td>' +
+        '<td><span class="pill ' + (c.type === '必修' ? 'req' : 'opt') + '">' + esc(c.type) + '</span></td>' +
+        '<td>' + why + '</td><td>' + (can ? '<button class="mini-btn" data-goto="' + c.code + '">前往選課</button>' : '') + '</td></tr>';
+    });
+    h += '</tbody></table></div>';
+    h += '<div class="hint">＊「必修」科目為該系所規範之應修課程，畢業前須全部修畢。名額已滿者可於加選開放時改選其他時段或等待釋出名額。</div>';
+  }
+  h += '</div></div>';
+
+  /* 快捷入口 */
+  h += '<div class="card"><h2>🔗 快捷服務</h2><div class="body">';
+  const quick = [
+    ['reg', '選課系統', '加選／退選、查看選課結果'],
+    ['sched', '課表查詢', '本學期個人課表與教室'],
+    ['grade', '成績查詢', '歷年成績與學期平均'],
+    ['leave', '請假作業', '線上填寫假單與查詢狀態'],
+    ['me', '個人資料', '維護聯絡方式、修改密碼']
+  ];
+  h += '<table><tbody>';
+  quick.forEach(function (q) {
+    h += '<tr style="cursor:pointer" data-goto="' + q[0] + '"><td><b>' + esc(q[1]) + '</b><br>' +
+      '<span style="font-size:12px;color:var(--muted)">' + esc(q[2]) + '</span></td>' +
+      '<td style="text-align:right;color:var(--navy-2)">›</td></tr>';
+  });
+  h += '</tbody></table>';
+  h += '</div></div>';
+  h += '</div>';
+
+  /* 公告 */
+  h += '<div class="card"><h2>📢 校園公告<span class="tag">共 ' + db.news.length + ' 則</span></h2><div class="body">';
+  db.news.slice().sort(function (a, b) { return (b.pin - a.pin) || (a.date < b.date ? 1 : -1); }).forEach(function (n) {
+    h += '<div class="ann' + (n.pin ? ' pin' : '') + '">' +
+      '<div class="t">' + esc(n.title) + ' <span class="pill">' + esc(n.tag) + '</span></div>' +
+      '<div class="m">張貼日期：' + esc(n.date) + '</div>' +
+      '<div class="c">' + esc(n.body) + '</div></div>';
+  });
+  h += '</div></div>';
+  return h;
+};
+function lastTerm() { return TERMS[1].id; }   // 115-1 進行中，最近完整學期為 114-2
+
+BIND.home = function () {
+  $$('#view [data-goto]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      const t = el.dataset.goto;
+      if (VIEWS[t]) { go(t); return; }
+      UI.search = t;            // 課程代號 → 帶入選課頁搜尋
+      go('reg');
+    });
+  });
+};
+
+/* ---------------------------------------------------------- 課表 */
+function buildTable(fn) {
+  let h = '<div class="tbl-scroll"><table class="tt"><thead><tr><th>節次／時間</th>';
+  [1, 2, 3, 4, 5].forEach(function (d) { h += '<th>週' + DAYS[d - 1] + '</th>'; });
+  h += '</tr></thead><tbody>';
+  for (let p = 1; p <= 8; p++) {
+    h += '<tr><td><div class="slot"><b>第' + p + '節</b>' + PERIODS[p - 1] + '</div></td>';
+    [1, 2, 3, 4, 5].forEach(function (d) {
+      const c = fn(d, p);
+      h += '<td>' + (c
+        ? '<div class="course" style="background:' + colorOf(c.code) + '" title="' +
+          esc(c.name + '／' + c.teacher + '／' + c.room + '／' + slotText(c)) + '"><b>' +
+          esc(c.name) + '</b><span>' + esc(c.room) + '</span></div>'
+        : '<div class="slot">&nbsp;</div>') + '</td>';
+    });
+    h += '</tr>';
+  }
+  h += '</tbody></table></div>';
+  return h;
+}
+
+VIEWS.sched = function () {
+  const list = pickedCourses();
+  const day = list.filter(function (c) { return c.slots.some(function (s) { return !s.ev; }); });
+  const night = list.filter(function (c) { return c.slots.some(function (s) { return s.ev; }); });
+  const cr = creditOf(list);
+  const periods = list.reduce(function (a, c) {
+    return a + c.slots.reduce(function (b, s) { return b + (s.ev ? 0 : s.p.length); }, 0);
+  }, 0);
+  let h = '';
+
+  h += '<div class="grid g4" style="margin-bottom:18px">';
+  h += statBox('本學期總學分', cr, '學分');
+  h += statBox('修課門數', list.length, '門');
+  h += statBox('每週上課節數', periods, '節');
+  h += statBox('授課教師', list.filter(function (c, i) {
+    return list.filter(function (x) { return x.teacher === c.teacher; }).length === 1;
+  }).length, '位');
+  h += '</div>';
+
+  h += '<div class="card"><h2>📅 課表查詢<span class="tag">' + termLabel(NOW_TERM) + '</span></h2><div class="body">';
+  h += buildTable(function (d, p) {
+    return day.filter(function (c) {
+      return c.slots.some(function (s) { return !s.ev && s.d === d && s.p.indexOf(p) >= 0; });
+    })[0] || null;
+  });
+  if (day.length) {
+    h += '<div class="legend">';
+    day.forEach(function (c) {
+      h += '<span><i style="background:' + colorOf(c.code) + '"></i>' + esc(c.name) + '</span>';
+    });
+    h += '</div>';
+  }
+  h += '<div class="hint">＊滑鼠停留於課表上的色塊可查看課程、教師與教室資訊。空白格表示該節無課。</div>';
+  h += '</div></div>';
+
+  if (night.length) {
+    h += '<div class="card"><h2>🌙 夜間課程<span class="tag">' + night.length + ' 門</span></h2><div class="body"><div class="tbl-scroll"><table>';
+    h += '<thead><tr><th>科目</th><th>教師</th><th>教室</th><th>時間</th></tr></thead><tbody>';
+    night.forEach(function (c) {
+      h += '<tr><td><b>' + esc(c.name) + '</b><br><span style="font-size:12px;color:var(--muted)">' +
+        esc(c.code) + '　' + esc(c.credit) + ' 學分</span></td><td>' + esc(c.teacher) + '</td><td>' +
+        esc(c.room) + '</td><td>' + esc(slotText(c)) + '</td></tr>';
+    });
+    h += '</tbody></table></div></div></div>';
+  }
+
+  h += '<div class="card"><h2>📋 修課明細</h2><div class="body"><div class="tbl-scroll"><table>';
+  h += '<thead><tr><th>科目代號</th><th>科目名稱</th><th>學分</th><th>教師</th><th>教室</th><th>上課時間</th><th>類別</th></tr></thead><tbody>';
+  if (!list.length) {
+    h += '<tr><td colspan="7"><div class="empty">本學期尚未選課，請至「選課系統」辦理選課。</div></td></tr>';
+  } else {
+    list.slice().sort(function (a, b) { return a.code < b.code ? -1 : 1; }).forEach(function (c) {
+      h += '<tr><td>' + esc(c.code) + '</td><td><b>' + esc(c.name) + '</b></td><td class="num">' + c.credit +
+        '</td><td>' + esc(c.teacher) + '</td><td>' + esc(c.room) + '</td><td>' + esc(slotText(c)) +
+        '</td><td><span class="pill ' + (c.type === '必修' ? 'req' : 'opt') + '">' + esc(c.type) + '</span></td></tr>';
+    });
+  }
+  h += '</tbody></table></div></div></div>';
+  return h;
+};
+/* =========================================================================
+   頁面：選課系統 / 成績查詢
+   ========================================================================= */
+const UI = { search: '', type: '全部', dept: '全部', day: '全部', state: '全部', gterm: TERMS[1].id };
+
+function seatBar(c) {
+  const used = seatUsed(c), left = seatLeft(c), r = used / c.cap;
+  const cls = left <= 0 ? 'full' : (r >= 0.85 ? 'tight' : '');
+  return '<span class="bar-sm"><i class="' + cls + '" style="width:' + Math.min(100, r * 100) + '%"></i></span> ' +
+    '<span style="font-size:12px;color:var(--muted)">' + left + '</span>';
+}
+
+/* ---------------------------------------------------------- 選課 */
+VIEWS.reg = function () {
+  const list = pickedCourses();
+  const cr = creditOf(list);
+  const d = dueInfo();
+  const over = cr > RULES.creditOver;
+  let h = '';
+
+  if (d.left <= 0) {
+    h += '<div class="notice" style="background:#fdeceb;border-color:#f6c9c4;color:#8c2b1f">' +
+      '⛔ 加選／退選已於 ' + esc(RULES.addDropDue) + ' 截止，目前系統僅供查詢。如需異動請洽課務組（分機 2101）。</div>';
+  } else {
+    h += '<div class="notice">⏰ 加選／退選開放中，距截止（' + esc(RULES.addDropDue) +
+      '）尚有 <b>' + d.days + ' 天</b>。每學期上限 ' + RULES.creditMax + ' 學分' +
+      (me.u.overReason ? '；已登記超學分理由：<b>' + esc(me.u.overReason) + '</b>' : '') + '</div>';
+  }
+
+  /* 已選課 */
+  h += '<div class="card"><h2>✅ 本學期已選課程<span class="tag">' + list.length + ' 門 / ' + cr + ' 學分</span></h2><div class="body">';
+  if (!list.length) {
+    h += '<div class="empty">尚未選課，請於下方課程清單點選「選課」。</div>';
+  } else {
+    h += '<div class="tbl-scroll"><table><thead><tr><th>科目</th><th>學分</th><th>教師／教室</th>' +
+      '<th>上課時間</th><th class="num">名額餘額</th><th>類別</th><th></th></tr></thead><tbody>';
+    list.slice().sort(function (a, b) { return a.code < b.code ? -1 : 1; }).forEach(function (c) {
+      h += '<tr><td><b style="color:' + colorOf(c.code) + '">' + esc(c.code) + '</b>　' + esc(c.name) + '</td>' +
+        '<td class="num">' + c.credit + '</td><td>' + esc(c.teacher) + '<br><span style="font-size:12px;color:var(--muted)">' +
+        esc(c.room) + '</span></td><td>' + esc(slotText(c)) + '</td><td class="num">' + seatBar(c) + '</td>' +
+        '<td><span class="pill ' + (c.type === '必修' ? 'req' : 'opt') + '">' + esc(c.type) + '</span></td>' +
+        '<td><button class="mini-btn danger" data-drop="' + c.code + '"' + (d.left <= 0 ? ' disabled' : '') + '>退課</button></td></tr>';
+    });
+    h += '</tbody></table></div>';
+
+    h += '<div class="grid g4" style="margin-top:14px">';
+    h += statBox('已選學分', cr, '/ ' + RULES.creditMax);
+    h += statBox('可再選學分', Math.max(0, RULES.creditMax - cr), '學分');
+    h += statBox('超學分門檻', RULES.creditOver, '學分');
+    h += statBox('狀態', over ? '已登記理由' : '未達門檻', '');
+    h += '</div>';
+    if (over && !me.u.overReason) {
+      h += '<div class="notice" style="margin-top:12px">⚠ 已達超學分門檻（' + RULES.creditOver +
+        ' 學分），請至下方填寫「超學分理由」後送出，以符合作業規定。</div>';
+    }
+  }
+  h += '</div></div>';
+
+  /* 課程清單 */
+  h += '<div class="card"><h2>📚 課程清單<span class="tag">' + termLabel(NOW_TERM) + '　共 ' + COURSES.length + ' 門</span></h2><div class="body">';
+
+  const depOpts = ['全部'].concat(Object.keys(DEPTS).map(function (k) { return DEPTS[k]; }));
+  h += '<div class="filters">';
+  h += '<div class="f"><label>關鍵字（名稱／代號／教師）</label><input type="search" class="inp" id="fSearch" value="' + esc(UI.search) + '" placeholder="例：資料庫、CS、黃信誠"></div>';
+  h += '<div class="f"><label>類別</label><select class="inp" id="fType">' +
+    ['全部', '必修', '選修', '通識'].map(function (v) {
+      return '<option' + (UI.type === v ? ' selected' : '') + '>' + v + '</option>';
+    }).join('') + '</select></div>';
+  h += '<div class="f"><label>開課系所</label><select class="inp" id="fDept">' +
+    depOpts.map(function (v) {
+      return '<option' + (UI.dept === v ? ' selected' : '') + '>' + v + '</option>';
+    }).join('') + '</select></div>';
+  h += '<div class="f"><label>時段</label><select class="inp" id="fDay">' +
+    ['全部', '白天', '夜間'].map(function (v) {
+      return '<option' + (UI.day === v ? ' selected' : '') + '>' + v + '</option>';
+    }).join('') + '</select></div>';
+  h += '<div class="f"><label>狀態</label><select class="inp" id="fState">' +
+    ['全部', '可選', '名額已滿', '已選修'].map(function (v) {
+      return '<option' + (UI.state === v ? ' selected' : '') + '>' + v + '</option>';
+    }).join('') + '</select></div>';
+  h += '<div class="f"><button class="mini-btn" id="fReset">清除篩選</button></div>';
+  h += '</div>';
+
+  const kw = UI.search.trim().toLowerCase();
+  const list2 = COURSES.filter(function (c) {
+    if (kw && (c.code + c.name + c.teacher).toLowerCase().indexOf(kw) < 0) return false;
+    if (UI.type !== '全部' && c.type !== UI.type) return false;
+    if (UI.dept !== '全部' && c.deptName !== UI.dept) return false;
+    const isNight = c.slots.some(function (s) { return s.ev; });
+    if (UI.day === '白天' && isNight) return false;
+    if (UI.day === '夜間' && !isNight) return false;
+    const picked = me.u.picked.indexOf(c.code) >= 0;
+    if (UI.state === '可選' && (isFull(c) || picked)) return false;
+    if (UI.state === '名額已滿' && !isFull(c)) return false;
+    if (UI.state === '已選修' && !picked) return false;
+    return true;
+  });
+
+  h += '<div class="tbl-scroll"><table><thead><tr><th>科目</th><th class="num">學分</th><th>教師</th><th>教室</th>' +
+    '<th>上課時間</th><th class="num">餘額／名額</th><th>類別</th><th>狀態</th><th></th></tr></thead><tbody>';
+  if (!list2.length) {
+    h += '<tr><td colspan="9"><div class="empty">查無符合條件的課程，請調整篩選條件。</div></td></tr>';
+  } else {
+    list2.forEach(function (c) {
+      const picked = me.u.picked.indexOf(c.code) >= 0;
+      const full = isFull(c);
+      const clash = clashList(list, c.code);
+      let st = '<span class="pill ok">可選</span>';
+      if (picked) st = '<span class="pill req">已選修</span>';
+      else if (full) st = '<span class="pill full">名額已滿</span>';
+      else if (clash.length) st = '<span class="pill wait">時段衝突</span>';
+      const dis = (picked || full || d.left <= 0);
+      h += '<tr><td><b style="color:' + colorOf(c.code) + '">' + esc(c.code) + '</b>　' + esc(c.name) +
+        (clash.length ? '<br><span style="font-size:12px;color:var(--warn)">衝堂：' + esc(clash.join('、')) + '</span>' : '') +
+        '</td><td class="num">' + c.credit + '</td><td>' + esc(c.teacher) + '</td><td>' + esc(c.room) +
+        '</td><td>' + esc(slotText(c)) + '</td><td class="num">' + seatBar(c) +
+        '</td><td><span class="pill ' + (c.type === '必修' ? 'req' : 'opt') + '">' + esc(c.type) + '</span></td>' +
+        '<td>' + st + '</td><td>' + (picked
+          ? '<button class="mini-btn" data-detail="' + c.code + '">詳細</button>'
+          : '<button class="mini-btn" data-pick="' + c.code + '"' + (dis ? ' disabled' : '') + '>選課</button>') + '</td></tr>';
+    });
+  }
+  h += '</tbody></table></div>';
+  h += '<div class="hint">＊「衝堂」表示與你目前已選課程之上課時間重疊，仍可選課但將無法同時出席，請自行確認後再送出。</div>';
+  h += '</div></div>';
+
+  /* 超學分理由 */
+  h += '<div class="card"><h2>📝 超學分理由登記<span class="tag">達 ' + RULES.creditOver + ' 學分者必填</span></h2><div class="body">';
+  h += '<div class="form-row"><label class="fld">超學分理由（將併送導師與課務組審核）</label>' +
+    '<textarea class="inp" id="overReason" rows="3" placeholder="例：本學期畢業學分不足，且已取得系上同意加速修畢。">' +
+    esc(me.u.overReason) + '</textarea></div>';
+  h += '<div class="form-act"><button class="btn-s" id="saveOver">儲存理由</button>' +
+    '<button class="btn-s line" id="clearOver">清除</button></div>';
+  h += '</div></div>';
+
+  return h;
+};
+
+/* 選課／退課 */
+function doPick(code) {
+  const c = courseOf(code);
+  if (!c) return;
+  const d = dueInfo();
+  if (d.left <= 0) { toast('加選／退選已截止，無法選課。', 'err'); return; }
+  if (me.u.picked.indexOf(code) >= 0) { toast('此課程已選修。', 'err'); return; }
+  if (isFull(c)) { toast('名額已滿（' + seatUsed(c) + '/' + c.cap + '），無法選課。', 'err'); return; }
+
+  const done = allPassedCodes();
+  if (done[code]) {
+    toast('此科已修及格（' + done[code] + '），不得重複選修；如需重修請洽課務組。', 'err');
+    return;
+  }
+
+  const list = pickedCourses();
+  const clash = clashList(list, code);
+  const newCr = creditOf(list) + c.credit;
+  if (newCr > RULES.creditMax) {
+    toast('選課後學分將達 ' + newCr + ' 學分，超過上限 ' + RULES.creditMax + ' 學分。', 'err');
+    return;
+  }
+
+  let html = '<p><b>' + esc(c.code) + ' ' + esc(c.name) + '</b>（' + c.credit + ' 學分）</p>';
+  html += '<p>教師：' + esc(c.teacher) + '　教室：' + esc(c.room) + '<br>時間：' + esc(slotText(c)) + '</p>';
+  html += '<p>選課後學分：' + creditOf(list) + ' → <b>' + newCr + '</b> 學分（上限 ' + RULES.creditMax + '）</p>';
+  if (clash.length) {
+    html += '<div class="notice" style="margin:10px 0 0">⚠ 與下列已選課程時段重疊：<b>' +
+      esc(clash.join('、')) + '</b></div>';
+  }
+  if (newCr > RULES.creditOver && !me.u.overReason) {
+    html += '<div class="notice" style="margin:10px 0 0">⚠ 選課後將達超學分門檻，請記得於本頁下方登記「超學分理由」。</div>';
+  }
+
+  openModal('確認選課', html, function () {
+    me.u.picked.push(code);
+    me.u.extra[code] = (me.u.extra[code] || 0);
+    saveDB();
+    toast('已選修 ' + c.name + '（' + c.code + '）', 'ok');
+    go('reg');
+  });
+}
+
+function doDrop(code) {
+  const c = courseOf(code);
+  if (!c) return;
+  if (dueInfo().left <= 0) { toast('退選已截止。', 'err'); return; }
+  const req = me.u.required.indexOf(code) >= 0;
+  openModal('確認退課', '<p>確定要退掉 <b>' + esc(c.name) + '</b>（' + esc(code) + '）嗎？</p>' +
+    '<p>退課後學分：' + creditOf(pickedCourses()) + ' → <b>' + (creditOf(pickedCourses()) - c.credit) + '</b> 學分</p>' +
+    (req ? '<div class="notice" style="margin:10px 0 0;color:#8c2b1f;background:#fdeceb;border-color:#f6c9c4">' +
+      '⚠ 此科目為系所必修科目，退選後須另行補修，請先確認。</div>' : ''),
+    function () {
+      me.u.picked = me.u.picked.filter(function (x) { return x !== code; });
+      if (me.u.extra[code]) delete me.u.extra[code];
+      saveDB();
+      toast('已退掉 ' + c.name, 'ok');
+      go('reg');
+    }, '確定退課');
+}
+
+BIND.reg = function () {
+  const q = function (id) { return $('#' + id); };
+  const apply = function () { go('reg'); };
+  if (!q('fSearch')) return;
+  let t = null;
+  q('fSearch').addEventListener('input', function (e) {
+    const v = e.target.value;
+    clearTimeout(t);
+    t = setTimeout(function () { UI.search = v; apply(); }, 350);
+  });
+  [['fType', 'type'], ['fDept', 'dept'], ['fDay', 'day'], ['fState', 'state']].forEach(function (p) {
+    q(p[0]).addEventListener('change', function (e) { UI[p[1]] = e.target.value; apply(); });
+  });
+  q('fReset').addEventListener('click', function () {
+    UI.search = ''; UI.type = '全部'; UI.dept = '全部'; UI.day = '全部'; UI.state = '全部'; apply();
+  });
+  $$('#view [data-pick]').forEach(function (b) { b.addEventListener('click', function () { doPick(b.dataset.pick); }); });
+  $$('#view [data-drop]').forEach(function (b) { b.addEventListener('click', function () { doDrop(b.dataset.drop); }); });
+  $$('#view [data-detail]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      const c = courseOf(b.dataset.detail);
+      openModal('課程資訊',
+        '<p><b>' + esc(c.code) + ' ' + esc(c.name) + '</b></p>' +
+        '<div class="kv">' +
+        kvRow('學分', c.credit + ' 學分') + kvRow('類別', c.type) +
+        kvRow('開課系所', c.deptName) + kvRow('授課教師', c.teacher) +
+        kvRow('上課教室', c.room) + kvRow('上課時間', slotText(c)) +
+        kvRow('名額', '名額 ' + c.cap + ' 人，剩餘 ' + seatLeft(c) + ' 人') +
+        kvRow('本學期狀態', '已選修（計入 ' + c.credit + ' 學分）') + '</div>', null);
+    });
+  });
+  const saveOver = q('saveOver');
+  if (saveOver) {
+    saveOver.addEventListener('click', function () {
+      const v = q('overReason').value.trim();
+      if (creditOf(pickedCourses()) > RULES.creditOver && v.length < 5) {
+        toast('已達超學分門檻，請填寫至少 5 個字的理由。', 'err'); return;
+      }
+      me.u.overReason = v; saveDB();
+      toast(v ? '已儲存超學分理由' : '已清除超學分理由', 'ok');
+      go('reg');
+    });
+    q('clearOver').addEventListener('click', function () {
+      me.u.overReason = ''; saveDB(); toast('已清除超學分理由', 'ok'); go('reg');
+    });
+  }
+};
+function kvRow(k, v) { return '<div class="r"><span class="k">' + esc(k) + '</span><span>' + esc(v) + '</span></div>'; }
+
+/* ---------------------------------------------------------- 成績 */
+function transcript(term) {
+  const rows = me.u.grades[term];
+  const h = [];
+  h.push('<div style="text-align:center;margin-bottom:14px">' +
+    '<div style="font-size:18px;font-weight:bold">金門大學　學生成績單</div>' +
+    '<div style="font-size:13px;color:var(--muted)">' + esc(termLabel(term)) + '</div></div>');
+  h.push('<div class="kv" style="margin-bottom:14px">' +
+    kvRow('學號', me.id) + kvRow('姓名', me.u.name) +
+    kvRow('系所', DEPTS[me.u.deptCode]) + kvRow('班級', me.u.cls) +
+    kvRow('列印時間', nowStamp()) + kvRow('頁次', '1 / 1') + '</div>');
+  h.push('<div class="tbl-scroll"><table><thead><tr><th>序</th><th>科目代號</th><th>科目名稱</th>' +
+    '<th class="num">學分</th><th class="num">成績</th><th class="num">等第</th></tr></thead><tbody>');
+  if (!rows || !rows.length) {
+    h.push('<tr><td colspan="6"><div class="empty">本學期尚未輸入成績。</div></td></tr>');
+  } else {
+    rows.forEach(function (r, i) {
+      h.push('<tr><td class="num">' + (i + 1) + '</td><td>' + esc(r[0]) + '</td><td>' + esc(r[1]) +
+        '</td><td class="num">' + r[2] + '</td><td class="num">' + (r[3] === null ? '通過' : r[3]) +
+        '</td><td class="num">' + levelOf(r[3]) + '</td></tr>');
+    });
+  }
+  const avg = rows ? avgOf(rows) : null;
+  h.push('<tr style="background:#f7f9fc;font-weight:bold"><td colspan="3">學期加權平均</td>' +
+    '<td class="num">' + (rows ? creditsOf(rows) : 0) + '</td>' +
+    '<td class="num">' + (avg === null ? '—' : avg.toFixed(2)) + '</td><td></td></tr>');
+  h.push('</tbody></table></div>');
+  h.push('<div class="hint">＊加權平均計算方式：Σ(成績×學分) ÷ Σ(學分)，0 學分科目不列入計算。成績等第對照：A 90、A- 85、B+ 80、B 75、C+ 70、C 65、D 60、E 50、F 50以下。</div>');
+  h.push('<div style="margin-top:16px;font-size:12px;color:var(--muted)">（本成績單為模擬示範資料，非正式文件，不具任何效力）</div>');
+  return h.join('');
+}
+
+VIEWS.grade = function () {
+  const terms = TERMS.filter(function (t) { return me.u.grades[t.id]; });
+  const cur = UI.gterm;
+  const rows = me.u.grades[cur] || null;
+  const avg = rows ? avgOf(rows) : null;
+
+  let h = '';
+  h += '<div class="card"><h2>📈 學期概覽</h2><div class="body"><div class="filters" style="margin-bottom:0">';
+  h += '<div class="f"><label>學期</label><select class="inp" id="gTerm">' +
+    TERMS.map(function (t) {
+      return '<option value="' + t.id + '"' + (cur === t.id ? ' selected' : '') + '>' + esc(t.label) +
+        (me.u.grades[t.id] ? '' : '（未輸入）') + '</option>';
+    }).join('') + '</select></div>';
+  h += '<div class="f"><button class="btn-s" id="gPrint"' + (rows && rows.length ? '' : ' disabled') + '>列印成績單</button></div>';
+  h += '</div></div></div>';
+
+  if (!rows || !rows.length) {
+    h += '<div class="card"><h2>📖 ' + esc(termLabel(cur)) + '</h2><div class="body">' +
+      '<div class="empty">本學期（' + esc(termLabel(cur)) + '）尚未輸入成績。<br>' +
+      '成績通常於期中考後輸入部分、學期末全部輸入完畢。</div></div></div>';
+    h += historyTable();
+    return h;
+  }
+
+  const fail = rows.filter(function (r) { return r[3] !== null && r[3] < 60; }).length;
+  h += '<div class="grid g4" style="margin-bottom:18px">';
+  h += statBox('學期加權平均', avg.toFixed(2), '分');
+  h += statBox('修讀學分', creditsOf(rows), '學分');
+  h += statBox('修課門數', rows.length, '門');
+  h += statBox('不及格科目', fail, fail ? '門（須重修）' : '門');
+  h += '</div>';
+
+  h += '<div class="card"><h2>📖 ' + esc(termLabel(cur)) + ' 成績明細' +
+    '<span class="tag">共 ' + rows.length + ' 門</span></h2><div class="body">';
+  h += '<div class="tbl-scroll"><table><thead><tr><th>序</th><th>科目代號</th><th>科目名稱</th>' +
+    '<th class="num">學分</th><th class="num">成績</th><th class="num">等第</th></tr></thead><tbody>';
+  rows.forEach(function (r, i) {
+    const bad = r[3] !== null && r[3] < 60;
+    h += '<tr><td class="num">' + (i + 1) + '</td><td>' + esc(r[0]) + '</td><td>' + esc(r[1]) +
+      '</td><td class="num">' + r[2] + '</td><td class="num"' + (bad ? ' style="color:var(--bad);font-weight:bold"' : '') +
+      '>' + (r[3] === null ? '通過' : r[3]) + '</td><td class="num">' + levelOf(r[3]) + '</td></tr>';
+  });
+  h += '<tr style="background:#f7f9fc;font-weight:bold"><td colspan="3">學期加權平均</td>' +
+    '<td class="num">' + creditsOf(rows) + '</td><td class="num">' + avg.toFixed(2) + '</td><td></td></tr>';
+  h += '</tbody></table></div>';
+  h += '<div class="hint">＊0 學分科目顯示為「通過」，不列入加權平均計算。</div>';
+  h += '</div></div>';
+  h += historyTable();
+  return h;
+};
+
+function historyTable() {
+  let all = [], fails = 0;
+  const terms = TERMS.filter(function (t) { return me.u.grades[t.id] && me.u.grades[t.id].length; });
+  terms.forEach(function (t) {
+    (me.u.grades[t.id] || []).forEach(function (r) {
+      if (r[3] === null) return;
+      all.push({ t: t.id, c: r[0], n: r[1], cr: r[2], sc: r[3] });
+      if (r[3] < 60) fails++;
+    });
+  });
+  const avgAll = all.length ? all.reduce(function (a, r) { return a + r.sc * r.cr; }, 0) /
+    all.reduce(function (a, r) { return a + r.cr; }, 0) : 0;
+
+  let h = '<div class="card"><h2>📚 歷年修業進度<span class="tag">' + terms.length + ' 個學期</span></h2><div class="body">';
+  h += '<div class="grid g4" style="margin-bottom:14px">';
+  h += statBox('累計修讀學分', all.reduce(function (a, r) { return a + r.cr; }, 0), '學分');
+  h += statBox('累計平均', avgAll ? avgAll.toFixed(2) : '—', avgAll ? '分' : '');
+  h += statBox('累計不及格', fails, fails ? '門' : '門');
+  h += statBox('累計修課', all.length, '門');
+  h += '</div>';
+  h += '<div class="tbl-scroll"><table><thead><tr><th>學期</th><th>科目代號</th><th>科目名稱</th>' +
+    '<th class="num">學分</th><th class="num">成績</th><th class="num">等第</th></tr></thead><tbody>';
+  if (!all.length) {
+    h += '<tr><td colspan="6"><div class="empty">尚無歷史成績紀錄。</div></td></tr>';
+  } else {
+    all.forEach(function (r) {
+      h += '<tr><td>' + esc(r.t) + '</td><td>' + esc(r.c) + '</td><td>' + esc(r.n) +
+        '</td><td class="num">' + r.cr + '</td><td class="num"' +
+        (r.sc < 60 ? ' style="color:var(--bad);font-weight:bold"' : '') + '>' + r.sc +
+        '</td><td class="num">' + levelOf(r.sc) + '</td></tr>';
+    });
+  }
+  h += '</tbody></table></div>';
+  h += '<div class="hint">＊累計資料涵蓋本系統已建立之歷年紀錄；正式學位授予資格須以教務處之審核結果為準。</div>';
+  h += '</div></div>';
+  return h;
+}
+
+BIND.grade = function () {
+  const sel = $('#gTerm');
+  if (sel) sel.addEventListener('change', function (e) { UI.gterm = e.target.value; go('grade'); });
+  const bt = $('#gPrint');
+  if (bt) bt.addEventListener('click', function () {
+    const keep = $('#view').innerHTML;
+    document.body.classList.add('printing');
+    $('#view').innerHTML = '<div class="card"><div class="body">' + transcript(UI.gterm) + '</div></div>';
+    window.print();
+    document.body.classList.remove('printing');
+    $('#view').innerHTML = keep;
+    BIND.grade();
+  });
+};
+/* =========================================================================
+   頁面：請假作業 / 個人資料
+   ========================================================================= */
+function dayDiff(a, b) {
+  return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000) + 1;
+}
+function judgeLeave(type, days) {
+  const rules = RULES.leaveRules.filter(function (r) { return r.type === type; })
+    .sort(function (a, b) { return a.max - b.max; });
+  for (let i = 0; i < rules.length; i++) {
+    if (days <= rules[i].max) return { status: rules[i].status, who: rules[i].who };
+  }
+  return { status: 'pending', who: '待系主任審核' };
+}
+const ST_TXT = { approved: '已核准', pending: '待審核', rejected: '未核准' };
+const ST_CLS = { approved: 'ok', pending: 'wait', rejected: 'no' };
+
+VIEWS.leave = function () {
+  const ls = me.u.leaves.slice().sort(function (a, b) { return a.applyAt < b.applyAt ? 1 : -1; });
+  const stat = { approved: 0, pending: 0, rejected: 0 };
+  ls.forEach(function (l) { stat[l.status]++; });
+
+  let h = '';
+  h += '<div class="grid g4" style="margin-bottom:18px">';
+  h += statBox('累計假單', ls.length, '件');
+  h += statBox('已核准', stat.approved, '件');
+  h += statBox('待審核', stat.pending, '件');
+  h += statBox('未核准', stat.rejected, '件');
+  h += '</div>';
+
+  /* 新增假單 */
+  h += '<div class="card"><h2>📝 新增請假單</h2><div class="body">';
+  h += '<div class="form-row"><label class="fld">假別</label><select class="inp" id="lvType">' +
+    RULES.leaveTypes.map(function (t) { return '<option value="' + t.v + '">' + t.v + '</option>'; }).join('') +
+    '</select><div class="hint" id="lvNeed" style="margin-top:6px">' +
+    esc(RULES.leaveTypes[0].need) + '</div></div>';
+  h += '<div class="grid g2">';
+  h += '<div class="form-row"><label class="fld">開始日期</label><input type="date" class="inp" id="lvStart"></div>';
+  h += '<div class="form-row"><label class="fld">結束日期</label><input type="date" class="inp" id="lvEnd"></div>';
+  h += '</div>';
+  h += '<div class="form-row"><label class="fld">請假天數</label>' +
+    '<input class="inp" id="lvDays" disabled value="0 天（自動計算）"></div>';
+  h += '<div class="form-row"><label class="fld">事由（必填，至少 5 個字）</label>' +
+    '<textarea class="inp" id="lvReason" rows="3" placeholder="請說明請假原因，將一併提供系上審核。"></textarea></div>';
+  h += '<div class="form-act"><button class="btn-s" id="lvAdd">送出假單</button>' +
+    '<button class="btn-s line" id="lvReset">清除欄位</button></div>';
+  h += '<div class="notice blue" style="margin:16px 0 0">審核說明：病假 1 日內、公假 3 日內、喪假 7 日內由系統自動核准；' +
+    '其餘情形送系上輔導教師／系主任審核。送出後如需撤回，請於「待審核」狀態下按「撤回」。</div>';
+  h += '</div></div>';
+
+  /* 紀錄 */
+  h += '<div class="card"><h2>📋 請假紀錄<span class="tag">共 ' + ls.length + ' 件</span></h2><div class="body">';
+  if (!ls.length) {
+    h += '<div class="empty">尚無請假紀錄。</div>';
+  } else {
+    h += '<div class="tbl-scroll"><table><thead><tr><th>單號</th><th>假別</th><th>日期</th>' +
+      '<th class="num">天數</th><th>事由</th><th>狀態</th><th>審核者</th><th></th></tr></thead><tbody>';
+    ls.forEach(function (l) {
+      h += '<tr><td>' + esc(l.id) + '</td><td>' + esc(l.type) + '</td><td>' + esc(l.start) + ' ~ ' + esc(l.end) +
+        '</td><td class="num">' + l.days + '</td><td style="max-width:220px">' + esc(l.reason) +
+        (l.memo ? '<br><span style="font-size:12px;color:var(--muted)">' + esc(l.memo) + '</span>' : '') +
+        '</td><td><span class="pill ' + ST_CLS[l.status] + '">' + ST_TXT[l.status] + '</span></td>' +
+        '<td style="font-size:12px">' + esc(l.who) + '</td><td>' +
+        (l.status === 'pending' ? '<button class="mini-btn danger" data-cancel="' + esc(l.id) + '">撤回</button>' : '') +
+        '</td></tr>';
+    });
+    h += '</tbody></table></div>';
+  }
+  h += '</div></div>';
+  return h;
+};
+
+BIND.leave = function () {
+  const type = $('#lvType'), start = $('#lvStart'), end = $('#lvEnd');
+  if (!type) return;
+  const days = $('#lvDays');
+
+  const calc = function () {
+    if (!start.value || !end.value) { days.value = '0 天（自動計算）'; return; }
+    if (end.value < start.value) { days.value = '日期錯誤'; return; }
+    days.value = dayDiff(start.value, end.value) + ' 天（含首日）';
+  };
+  start.addEventListener('change', calc);
+  end.addEventListener('change', calc);
+  type.addEventListener('change', function () {
+    const t = RULES.leaveTypes.filter(function (x) { return x.v === type.value; })[0];
+    $('#lvNeed').textContent = t ? t.need : '';
+  });
+
+  $('#lvReset').addEventListener('click', function () {
+    start.value = ''; end.value = $('#lvReason').value = ''; calc();
+  });
+
+  $('#lvAdd').addEventListener('click', function () {
+    const t = type.value, s = start.value, e = end.value;
+    const reason = $('#lvReason').value.trim();
+    if (!s || !e) { toast('請填寫請假起訖日期。', 'err'); return; }
+    if (e < s) { toast('結束日期不可早於開始日期。', 'err'); return; }
+    if (reason.length < 5) { toast('請填寫事由（至少 5 個字）。', 'err'); return; }
+    const n = dayDiff(s, e);
+    if (n > 30) { toast('單次請假不得超過 30 日，請洽系上承辦人。', 'err'); return; }
+
+    const j = judgeLeave(t, n);
+    const need = RULES.leaveTypes.filter(function (x) { return x.v === t; })[0];
+    const confirmHTML = '<p><b>' + esc(t) + '　' + esc(s) + ' ~ ' + esc(e) + '（' + n + ' 天）</b></p>' +
+      '<p>事由：' + esc(reason) + '</p>' +
+      '<div class="notice" style="margin:10px 0 0">應繳證明：' + esc(need.need) + '<br>' +
+      '審核結果將為：<b>' + ST_TXT[j.status] + '</b>（' + esc(j.who) + '）</div>';
+    openModal('確認送出假單', confirmHTML, function () {
+      me.u.leaves.push({
+        id: uid('L'), type: t, start: s, end: e, days: n, reason: reason,
+        status: j.status, applyAt: nowStamp(), who: j.who, memo: ''
+      });
+      saveDB();
+      toast(j.status === 'approved' ? '假單已送出並自動核准' : '假單已送出，等待審核', 'ok');
+      go('leave');
+    }, '確認送出');
+  });
+
+  $$('#view [data-cancel]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      const id = b.dataset.cancel;
+      openModal('確認撤回', '<p>確定要撤回假單 <b>' + esc(id) + '</b> 嗎？撤回後將無法復原，須重新填寫。</p>',
+        function () {
+          me.u.leaves = me.u.leaves.filter(function (l) { return l.id !== id; });
+          saveDB();
+          toast('假單 ' + id + ' 已撤回', 'ok');
+          go('leave');
+        }, '確定撤回');
+    });
+  });
+};
+
+/* ---------------------------------------------------------- 個人資料 */
+VIEWS.me = function () {
+  const u = me.u;
+  const g = me.u.grades[lastTerm()] || [];
+  let h = '';
+
+  h += '<div class="grid g2">';
+  h += '<div class="card"><h2>👤 基本資料<span class="tag">學籍資料不可自行修改</span></h2><div class="body"><div class="kv">';
+  h += kvRow('學號', me.id) + kvRow('姓名', u.name) + kvRow('性別', u.gender) +
+    kvRow('系所', DEPTS[u.deptCode]) + kvRow('班級', u.cls) +
+    kvRow('學年', (115 - parseInt(me.id.slice(0, 3), 10) + 1) + ' 年級') +
+    kvRow('狀態', '在學（正常註冊）') + kvRow('入學年月', (parseInt(me.id.slice(0, 3), 10) - 1911) + ' 年 9 月');
+  h += '</div><div class="hint">＊學號、姓名、系所、班級等資料如需異動，請至註冊課務組填寫「學籍異動申請表」。</div>';
+  h += '</div></div>';
+
+  h += '<div class="card"><h2>📞 聯絡方式（可修改）</h2><div class="body">';
+  h += '<div class="form-row"><label class="fld">行動電話</label><input class="inp" id="pPhone" value="' + esc(u.phone) + '"></div>';
+  h += '<div class="form-row"><label class="fld">電子郵件</label><input class="inp" id="pMail" value="' + esc(u.email) + '"></div>';
+  h += '<div class="form-row"><label class="fld">現居地址</label><input class="inp" id="pAddr" value="' + esc(u.addr) + '"></div>';
+  h += '<div class="grid g2">';
+  h += '<div class="form-row"><label class="fld">緊急聯絡人關係</label><select class="inp" id="pRel">' +
+    ['父親', '母親', '兄弟', '姊妹', '監護人', '其他'].map(function (v) {
+      return '<option' + (u.contact.rel === v ? ' selected' : '') + '>' + v + '</option>';
+    }).join('') + '</select></div>';
+  h += '<div class="form-row"><label class="fld">緊急聯絡人姓名</label><input class="inp" id="pCname" value="' + esc(u.contact.name) + '"></div>';
+  h += '</div>';
+  h += '<div class="form-row"><label class="fld">緊急聯絡人電話</label><input class="inp" id="pCphone" value="' + esc(u.contact.phone) + '"></div>';
+  h += '<div class="form-act"><button class="btn-s" id="pSave">儲存聯絡方式</button>' +
+    '<button class="btn-s line" id="pReset">還原</button></div>';
+  h += '<div class="hint">聯絡資訊將用於緊急事件聯絡、獎學金審查與寄送成績單，請確認為最新資料。</div>';
+  h += '</div></div>';
+  h += '</div>';
+
+  h += '<div class="card"><h2>🔑 修改密碼</h2><div class="body">';
+  h += '<div class="grid g2">';
+  h += '<div class="form-row"><label class="fld">目前密碼</label><input type="password" class="inp" id="oPwd" autocomplete="off"></div>';
+  h += '<div class="form-row"><label class="fld">新密碼</label><input type="password" class="inp" id="nPwd" autocomplete="off"></div>';
+  h += '</div>';
+  h += '<div class="form-row"><label class="fld">確認新密碼</label><input type="password" class="inp" id="nPwd2" autocomplete="off"></div>';
+  h += '<div class="form-act"><button class="btn-s" id="pwdSave">變更密碼</button></div>';
+  h += '<div class="hint">密碼規則：至少 8 個字元，且須同時包含英文與數字。變更後請以新密碼重新登入。</div>';
+  h += '</div></div>';
+
+  h += '<div class="card"><h2>📊 我的學籍摘要</h2><div class="body"><div class="grid g4">';
+  h += statBox('本學期學分', creditOf(pickedCourses()), '學分');
+  h += statBox('已修學期', TERMS.filter(function (t) { return me.u.grades[t.id]; }).length, '學期');
+  h += statBox('累計修讀學分', cumulativeCredits(), '學分');
+  h += statBox('待修必修', pendingRequired().length, '門');
+  h += '</div></div></div>';
+
+  h += '<div class="card"><h2>⚙ 系統設定</h2><div class="body">';
+  h += '<p style="margin:0 0 10px;font-size:13px;color:var(--muted)">資料儲存方式：' +
+    (LS.ok ? '瀏覽器本機儲存（localStorage），關閉瀏覽器後仍會保留。' : '本機儲存被瀏覽器限制，目前為暫存模式，重新開啟將恢復初始資料。') +
+    '</p>';
+  h += '<div class="form-act"><button class="btn-s line" id="resetAll">重設所有資料</button></div>';
+  h += '<div class="hint">重設後，選課、假單與個人資料異動將回復為初始示範內容。</div>';
+  h += '</div></div>';
+  return h;
+};
+
+function cumulativeCredits() {
+  let n = 0;
+  TERMS.forEach(function (t) {
+    (me.u.grades[t.id] || []).forEach(function (r) { if (r[3] !== null) n += r[2]; });
+  });
+  return n;
+}
+
+BIND.me = function () {
+  const save = $('#pSave');
+  if (save) {
+    save.addEventListener('click', function () {
+      const phone = $('#pPhone').value.trim(), mail = $('#pMail').value.trim();
+      const cphone = $('#pCphone').value.trim();
+      if (!/^09\d{8}$/.test(phone.replace(/-/g, ''))) { toast('行動電話格式不正確（應為 09 開頭 10 碼）。', 'err'); return; }
+      if (!/^09\d{8}$/.test(cphone.replace(/-/g, ''))) { toast('緊急聯絡人電話格式不正確。', 'err'); return; }
+      if (mail && mail.indexOf('@') < 0) { toast('電子郵件格式不正確。', 'err'); return; }
+      me.u.phone = phone; me.u.email = mail;
+      me.u.addr = $('#pAddr').value.trim();
+      me.u.contact = { rel: $('#pRel').value, name: $('#pCname').value.trim(), phone: cphone };
+      saveDB();
+      toast('聯絡方式已更新', 'ok');
+      go('me');
+    });
+    $('#pReset').addEventListener('click', function () { go('me'); toast('已還原為儲存前資料'); });
+  }
+  const pb = $('#pwdSave');
+  if (pb) {
+    pb.addEventListener('click', function () {
+      const o = $('#oPwd').value, n = $('#nPwd').value, n2 = $('#nPwd2').value;
+      if (o !== me.u.pwd) { toast('目前密碼不正確。', 'err'); return; }
+      if (n.length < 8) { toast('新密碼至少 8 個字元。', 'err'); return; }
+      if (!/[a-zA-Z]/.test(n) || !/\d/.test(n)) { toast('新密碼須同時包含英文與數字。', 'err'); return; }
+      if (n !== n2) { toast('兩次輸入的新密碼不一致。', 'err'); return; }
+      openModal('確認變更密碼',
+        '<p>密碼已變更，即將自動登出，請使用新密碼重新登入。</p>', function () {
+          me.u.pwd = n; saveDB();
+          toast('密碼已變更，請重新登入', 'ok');
+          setTimeout(showLogin, 700);
+        }, '變更並登出');
+    });
+  }
+  const rb = $('#resetAll');
+  if (rb) {
+    rb.addEventListener('click', function () {
+      openModal('重設所有資料',
+        '<p>此操作將清除本機所有選課、假單與個人資料異動，並回復為初始示範內容。</p>' +
+        '<p style="color:var(--bad)">確定要繼續嗎？</p>', function () {
+          resetDB(); me = { id: me.id, u: db.users[me.id] };
+          toast('已重設為初始資料', 'ok');
+          go('me');
+        }, '確定重設');
+    });
+  }
+};
+
+/* =========================================================================
+   啟動
+   ========================================================================= */
+init();
+</script>
+</body>
+</html>

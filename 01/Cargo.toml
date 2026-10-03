@@ -1,0 +1,43 @@
+[package]
+name = "rust-curl"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.74"
+description = "A lightweight, modular curl-like HTTP client CLI"
+license = "MIT"
+
+[dependencies]
+clap = { version = "4", features = ["derive", "wrap_help"] }
+reqwest = { version = "0.12", default-features = false, features = [
+    "rustls-tls",
+    "rustls-tls-webpki-roots",
+    "stream",
+    "multipart",
+    "socks",
+    "gzip",
+    "charset",
+    "http2",
+] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "io-util", "time"] }
+tokio-util = { version = "0.7", features = ["io"] }
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+indicatif = { version = "0.18", default-features = false, features = [
+    "improved_unicode",
+    "in_memory",
+] }
+colored = "2"
+anyhow = "1"
+thiserror = "1"
+url = "2"
+mime_guess = "2"
+bytes = "1"
+humantime = "2"
+base64 = "0.22"
+atty = "0.2"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
