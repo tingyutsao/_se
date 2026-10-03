@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rust-curl — A lightweight, modular curl-like HTTP client</title>
+<meta name="description" content="rust-curl 是一個以 Rust 寫的 curl-like HTTP 命令列工具，模組化設計、支援 HTTP/2、進度條、代理與 multipart 表單。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128220;</text></svg>">
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-soft: #161b22;
+    --border: #30363d;
+    --fg: #e6edf3;
+    --fg-dim: #8b949e;
+    --accent: #f0883e;
+    --accent-soft: rgba(240, 136, 62, 0.12);
+    --green: #3fb950;
+    --blue: #58a6ff;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", Roboto, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- nav ---------- */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(13, 17, 23, 0.82);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  nav .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+  nav .brand {
+    font-family: var(--mono);
+    font-weight: 600;
+    color: var(--fg);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  nav .brand span { color: var(--accent); }
+  nav .links { display: flex; gap: 22px; font-size: 14px; }
+  nav .links a { color: var(--fg-dim); }
+  nav .links a:hover { color: var(--fg); text-decoration: none; }
+  @media (max-width: 640px) { nav .links { display: none; } }
+
+  /* ---------- hero ---------- */
+  header.hero { padding: 88px 0 64px; }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid rgba(240, 136, 62, 0.3);
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    line-height: 1.15;
+    margin: 0 0 18px;
+    letter-spacing: -0.02em;
+  }
+  h1 code {
+    font-family: var(--mono);
+    background: none;
+    padding: 0;
+    color: var(--accent);
+  }
+  .lede {
+    font-size: 18px;
+    color: var(--fg-dim);
+    max-width: 60ch;
+    margin: 0 0 32px;
+  }
+  .cta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 14px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    color: var(--fg);
+    background: var(--bg-soft);
+    transition: border-color .15s, transform .15s;
+  }
+  .btn:hover { border-color: var(--accent); text-decoration: none; transform: translateY(-1px); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #0d1117; font-weight: 600; }
+
+  /* ---------- section ---------- */
+  section { padding: 56px 0; border-top: 1px solid var(--border); }
+  h2 {
+    font-size: 1.5rem;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2::before { content: "$"; color: var(--accent); font-family: var(--mono); font-weight: 400; }
+  .sub { color: var(--fg-dim); font-size: 15px; margin: 0 0 28px; }
+
+  /* ---------- grid / features ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .card h3 { margin: 0 0 6px; font-size: 15px; font-family: var(--mono); color: var(--accent); }
+  .card p { margin: 0; font-size: 14px; color: var(--fg-dim); }
+
+  /* ---------- code block ---------- */
+  .code {
+    position: relative;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin: 0 0 16px;
+  }
+  .code pre {
+    margin: 0;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.75;
+  }
+  .copy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--fg-dim);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .15s;
+  }
+  .code:hover .copy { opacity: 1; }
+  .copy:hover { color: var(--fg); border-color: var(--accent); }
+  .cmt { color: var(--fg-dim); }
+  .flag { color: var(--blue); }
+  .val { color: var(--green); }
+
+  /* ---------- table ---------- */
+  .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--bg-soft); font-family: var(--mono); font-size: 12px; color: var(--fg-dim); text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-family: var(--mono); color: var(--accent); white-space: nowrap; }
+  td:nth-child(2) { font-family: var(--mono); color: var(--blue); white-space: nowrap; }
+  td:last-child { color: var(--fg-dim); }
+  code.inline {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 28px 0;
+    color: var(--fg-dim);
+    font-size: 13px;
+    font-family: var(--mono);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand">rust<span>-</span>curl</div>
+    <div class="links">
+      <a href="#features">功能</a>
+      <a href="#install">安裝</a>
+      <a href="#usage">用法</a>
+      <a href="#options">選項</a>
+      <a href="#writeout">Write-out</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="tag">Rust · edition 2021 · MIT</span>
+    <h1><code>rust-curl</code><br>輕量、模組化的 curl 風格 HTTP 客戶端</h1>
+    <p class="lede">
+      以 Rust 與 reqwest 實作，保留 curl 最常用的指令介面，
+      同時帶來彩色輸出、下載進度條與清楚的模組分工。
+    </p>
+    <div class="cta">
+      <a class="btn primary" href="#install">安裝</a>
+      <a class="btn" href="#usage">快速開始</a>
+      <a class="btn" href="#options">所有選項</a>
+    </div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <h2>功能</h2>
+    <p class="sub">CLI flags 與 curl 慣例一致，migration 成本低。</p>
+    <div class="grid">
+      <div class="card">
+        <h3>HTTP/2 + rustls</h3>
+        <p>預設啟用 HTTP/2，TLS 走 rustls 與 webpki-roots，不需要系統 OpenSSL。</p>
+      </div>
+      <div class="card">
+        <h3>串流與進度條</h3>
+        <p>以 chunk 串流下載並顯示即時進度；輸出非 TTY 時自動隱藏。</p>
+      </div>
+      <div class="card">
+        <h3>Proxy &amp; SOCKS</h3>
+        <p>-x 支援 <code class="inline">[PROTOCOL://]HOST:PORT</code>，含 socks5。</p>
+      </div>
+      <div class="card">
+        <h3>壓縮與編碼</h3>
+        <p>gzip 自動解壓，charset 協助判斷文字編碼，binary 內容原樣輸出。</p>
+      </div>
+      <div class="card">
+        <h3>Multipart 表單</h3>
+        <p><code class="inline">-F key=value</code> 與 <code class="inline">-F key=@file</code> 皆可，建立標準 multipart body。</p>
+      </div>
+      <div class="card">
+        <h3>計時與指標</h3>
+        <p>內建 elapsed 計時，可用 <code class="inline">-w</code> 輸出狀態碼、速度、耗時等變數。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <h2>安裝</h2>
+    <p class="sub">需要 Rust 1.74 以上。</p>
+
+    <div class="code">
+      <button class="copy">copy</button>
+      <pre><span class="cmt"># 從 crates.io 安裝</span>
+<span class="flag">cargo install</span> rust-curl
+
+<span class="cmt"># 或直接從原始碼建置</span>
+<span class="flag">git clone</span> &lt;this-repo&gt; &amp;&amp; <span class="flag">cd</span> rust-curl
+<span class="flag">cargo build</span> --release
+<span class="flag">./target/release/rust-curl</span> --help</pre>
+    </div>
+
+    <div class="code">
+      <button class="copy">copy</button>
+      <pre><span class="cmt"># 檢查版本</span>
+rust-curl --version</pre>
+    </div>
+  </div>
+</section>
+
+<section id="usage">
+  <div class="wrap">
+    <h2>用法</h2>
+    <p class="sub">網址若省略 scheme，會自動補上 <code class="inline">http://</code>。</p>
+
+    <div class="code">
+      <button class="copy">copy</button>
+      <pre><span class="cmt"># 基本 GET</span>
+rust-curl <span class="val">https://example.com</span>
+
+<span class="cmt"># 顯示回應標頭</span>
+rust-curl -i <span class="val">https://example.com</span></pre>
+    </div>
+
+    <div class="code">
+      <button class="copy">copy</button>
+      <pre><span class="cmt"># POST 表單資料</span>
+rust-curl -X POST -d <span class="val">"name=alice&amp;age=30"</span> <span class="val">https://api.example.com/users</span>
+
+<span class="cmt"># 自訂標頭 + Basic Auth</span>
+rust-curl -H <span class="val">"Accept: application/json"</span> -u <span class="val">user:pass</span> <span class="val">https://api.example.com/me</span></pre>
+    </div>
+
+    <div class="code">
+      <button class="copy">copy</button>
+      <pre><span class="cmt"># 上傳 multipart 表單檔案</span>
+rust-curl -F <span class="val">"title=report"</span> -F <span class="val">"file=@./data.csv"</span> <span class="val">https://api.example.com/upload</span>
+
+<span class="cmt"># 下載檔案（以遠端檔名）＋ 跟隨轉向</span>
+rust-curl -L -O <span class="val">https://example.com/archive.zip</span>
+
+<span class="cmt"># 輸出到指定檔案，並印出統計</span>
+rust-curl -s -o out.json -w <span class="val">"%{http_code} %{size_download}B %{time_total}s\n"</span> <span class="val">https://example.com/api</span></pre>
+    </div>
+
+    <div class="code">
+      <button class="copy">copy</button>
+      <pre><span class="cmt"># 走 proxy、限時、詳細模式</span>
+rust-curl -v -x <span class="val">socks5://127.0.0.1:1080</span> -m <span class="val">10</span> --connect-timeout <span class="val">3</span> <span class="val">https://example.com</span></pre>
+    </div>
+  </div>
+</section>
+
+<section id="options">
+  <div class="wrap">
+    <h2>所有選項</h2>
+    <p class="sub">由 clap 4 定義，<code class="inline">rust-curl --help</code> 可取得同樣內容。</p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>短</th><th>長</th><th>說明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="3"><code class="inline">&lt;URL&gt;</code> — 要抓取的網址（必填）</td></tr>
+          <tr><td>-X</td><td>--request</td><td>HTTP 方法：GET / POST / PUT / DELETE / HEAD / OPTIONS / PATCH，預設 GET</td></tr>
+          <tr><td>-H</td><td>--header</td><td>自訂標頭，格式 <code class="inline">Name: Value</code>，可重複</td></tr>
+          <tr><td>-d</td><td>--data</td><td>請求主體（自動補 Content-Type）</td></tr>
+          <tr><td></td><td>--data-binary @FILE</td><td>從檔案讀取請求主體</td></tr>
+          <tr><td>-i</td><td>--include</td><td>在輸出中包含協定回應標頭</td></tr>
+          <tr><td>-o</td><td>--output FILE</td><td>輸出寫到檔案而非 stdout</td></tr>
+          <tr><td>-O</td><td>--remote-name</td><td>以遠端檔名寫入目前目錄</td></tr>
+          <tr><td>-L</td><td>--location</td><td>跟隨 HTTP 轉向</td></tr>
+          <tr><td></td><td>--max-redirs NUM</td><td>最多跟隨的轉向次數，預設 10</td></tr>
+          <tr><td>-m</td><td>--max-time SECONDS</td><td>整體傳輸時間上限</td></tr>
+          <tr><td></td><td>--connect-timeout SECONDS</td><td>連線時間上限</td></tr>
+          <tr><td>-u</td><td>--user USER:PASS</td><td>Basic Auth 認證</td></tr>
+          <tr><td>-x</td><td>--proxy [PROTOCOL://]HOST:PORT</td><td>使用代理</td></tr>
+          <tr><td>-s</td><td>--silent</td><td>靜默模式，不顯示進度與額外資訊</td></tr>
+          <tr><td>-v</td><td>--verbose</td><td>詳細模式，印出請求與回應標頭</td></tr>
+          <tr><td>-w</td><td>--write-out FORMAT</td><td>傳輸後輸出格式化統計</td></tr>
+          <tr><td>-F</td><td>--form KEY=VALUE\|@FILE</td><td>multipart 表單欄位，可重複</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="writeout">
+  <div class="wrap">
+    <h2>Write-out 變數</h2>
+    <p class="sub">用於 <code class="inline">-w</code>；<code class="inline">\n</code>、<code class="inline">\r</code>、<code class="inline">\t</code> 會被展開成對應控制字元。</p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>變數</th><th>單位</th><th>說明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>%{http_code}<br>%{response_code}</td><td>—</td><td>HTTP 回應狀態碼（兩者等價）</td></tr>
+          <tr><td>%{size_download}</td><td>bytes</td><td>下載的內容大小</td></tr>
+          <tr><td>%{speed_download}</td><td>bytes/s</td><td>平均下載速度</td></tr>
+          <tr><td>%{time_total}</td><td>秒</td><td>整體傳輸耗時</td></tr>
+          <tr><td>%{url_effective}</td><td>—</td><td>實際請求的最終網址</td></tr>
+          <tr><td>%{time_namelookup}<br>%{time_connect}<br>%{time_appconnect}<br>%{time_pretransfer}<br>%{time_redirect}<br>%{time_starttransfer}</td><td>秒</td><td>各階段耗時指標（保留欄位，目前固定為 0）</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>rust-curl — MIT License</div>
+  <div>built with reqwest / tokio / clap</div>
+</footer>
+
+<script>
+  document.querySelectorAll('.copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var pre = btn.parentElement.querySelector('pre');
+      navigator.clipboard.writeText(pre.innerText).then(function () {
+        btn.textContent = 'copied';
+        setTimeout(function () { btn.textContent = 'copy'; }, 1200);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
