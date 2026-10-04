@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CampusPulse · 校園匿名交流與二手揪團社群</title>
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand" id="brandHome" title="回到全部看板">
+      <span class="brand-bolt">⚡</span>
+      <span class="brand-text">Campus<strong>Pulse</strong></span>
+      <span class="brand-sub">校園脈動</span>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input id="searchInput" type="search" placeholder="搜尋標題、內文、標籤、作者…（即時模糊比對）" autocomplete="off" />
+      <button id="clearSearch" class="clear-search" hidden title="清除搜尋">✕</button>
+    </div>
+    <div class="top-actions">
+      <div class="sort-toggle" role="tablist" aria-label="排序切換">
+        <button id="sortNew" class="sort-btn active" role="tab" aria-selected="true" title="依最新發布排序">🕘 最新</button>
+        <button id="sortHot" class="sort-btn" role="tab" aria-selected="false" title="依讚數排序">🔥 熱門</button>
+      </div>
+      <button id="resetBtn" class="ghost-btn" title="還原為初始展示資料">↺ 重置展示</button>
+    </div>
+  </div>
+  <div class="sponsor-strip">📢 校園贊助：開學季「巷口咖啡」憑學生證第二杯半價 · 二手市集付費置頂 24hr 只要 30 點 · <a href="#" id="sponsorLink">成為贊助商 →</a></div>
+</header>
+
+<div class="layout">
+  <!-- 左側：看板選單 -->
+  <aside class="sidebar">
+    <button id="openPostModal" class="post-btn">＋ 我要發文</button>
+    <nav class="board-nav" aria-label="看板選單">
+      <p class="nav-title">看板 BOARDS</p>
+      <div id="boardList"></div>
+    </nav>
+    <div class="tag-card">
+      <p class="nav-title">熱門標籤 TAGS</p>
+      <div id="tagCloud" class="tag-cloud"></div>
+    </div>
+    <div class="info-card">
+      <h3>💡 為什麼用 CampusPulse？</h3>
+      <ul>
+        <li>一鍵匿名，問課業、聊心聲零壓力</li>
+        <li>二手 / 揪團分類清楚，不再被洗版</li>
+        <li>零伺服器，localStorage 離線可用</li>
+      </ul>
+      <div class="stat-row">
+        <div><b id="statPosts">0</b><span>貼文</span></div>
+        <div><b id="statComments">0</b><span>留言</span></div>
+        <div><b id="statLikes">0</b><span>獲推</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 右側：動態串 -->
+  <main class="feed-area">
+    <section class="board-hero">
+      <div>
+        <h1 id="boardTitle">全部動態</h1>
+        <p id="boardDesc">橫跨閒聊、二手、揪團的校園資訊流。即時搜尋 + 最新 / 熱門排序。</p>
+      </div>
+      <div id="tagFilterRow" class="tag-filter-row"></div>
+    </section>
+    <section id="feed" class="feed" aria-live="polite"></section>
+    <div id="emptyState" class="empty-state" hidden>
+      <div class="empty-emoji">🛸</div>
+      <h3>找不到符合的貼文</h3>
+      <p>試試換個關鍵字、切換看板，或成為第一個發文的人！</p>
+      <button class="post-btn" id="emptyPostBtn">＋ 發第一篇文</button>
+    </div>
+  </main>
+</div>
+
+<!-- 發文 Modal -->
+<div id="postModal" class="modal-backdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="postModalTitle">
+    <div class="modal-head">
+      <h2 id="postModalTitle">發表新貼文</h2>
+      <button class="icon-btn" data-close="postModal" aria-label="關閉">✕</button>
+    </div>
+    <form id="postForm">
+      <label class="field">
+        <span>看板 *</span>
+        <select id="fBoard" required>
+          <option value="chat">💬 閒聊匿名牆</option>
+          <option value="market">🛍 二手市集</option>
+          <option value="sport">🏸 運動 / 活動揪團</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>分類標籤 *</span>
+        <select id="fTag" required></select>
+      </label>
+      <label class="field">
+        <span>標題 *（最多 60 字）</span>
+        <input id="fTitle" maxlength="60" placeholder="例：出清九成新 Yonex 球拍 / 求推薦通識課" required />
+      </label>
+      <label class="field">
+        <span>內文 *</span>
+        <textarea id="fContent" rows="4" placeholder="補充細節：時間、地點、價格、聯絡方式…" required></textarea>
+      </label>
+      <div class="field-row">
+        <label class="field grow">
+          <span>暱稱</span>
+          <input id="fAuthor" maxlength="16" placeholder="例：羽球愛好者（留白則匿名）" />
+        </label>
+        <label class="anon-switch">
+          <input type="checkbox" id="fAnon" checked />
+          <span class="switch"></span> 完全匿名
+        </label>
+      </div>
+      <p class="anon-hint" id="anonHint">開啟後將由系統隨機指派如「匿名小鹿」之代號。</p>
+      <p class="form-error" id="formError" hidden></p>
+      <div class="modal-foot">
+        <button type="button" class="ghost-btn" data-close="postModal">取消</button>
+        <button type="submit" class="primary-btn">發布貼文 →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 貼文詳情 Modal -->
+<div id="detailModal" class="modal-backdrop" hidden>
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+    <div class="modal-head">
+      <div class="detail-head-meta">
+        <span id="detailBoard" class="pill"></span>
+        <span id="detailTag" class="tag"></span>
+      </div>
+      <button class="icon-btn" data-close="detailModal" aria-label="關閉">✕</button>
+    </div>
+    <h2 id="detailTitle"></h2>
+    <p class="detail-meta" id="detailMeta"></p>
+    <p class="detail-content" id="detailContent"></p>
+    <div class="vote-row large">
+      <button id="detailUp" class="vote-btn">▲ 推 <b id="detailLikes">0</b></button>
+      <button id="detailDown" class="vote-btn">▼ 噓</button>
+      <span class="vote-hint">一個帳號（本機）對每篇文只能投一次，重複點擊可取消。</span>
+    </div>
+    <div class="comments-head">
+      <h3>留言 <span id="commentCount">0</span></h3>
+      <span class="comments-sub">支援 @回覆，可巢狀追蹤對話</span>
+    </div>
+    <div id="commentList" class="comment-list"></div>
+    <form id="commentForm" class="comment-form">
+      <div class="comment-input-row">
+        <input id="cAuthor" maxlength="16" placeholder="暱稱（留白=匿名）" />
+        <label class="mini-anon"><input type="checkbox" id="cAnon" checked /> 匿名</label>
+      </div>
+      <div class="comment-box-row">
+        <input id="cContent" maxlength="300" placeholder="友善留言…（Enter 送出）" autocomplete="off" />
+        <button type="submit" class="primary-btn sm">送出</button>
+      </div>
+      <p class="replying-to" id="replyingTo" hidden>回覆給 <b id="replyTarget"></b> <button type="button" id="cancelReply">✕ 取消回覆</button></p>
+    </form>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<footer class="page-foot">
+  <span>CampusPulse · 零依賴原生 HTML / CSS / JS · 資料僅存於本機 localStorage · 展示用種子資料可一鍵重置</span>
+</footer>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
