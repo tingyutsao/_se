@@ -1,0 +1,137 @@
+# =============================================================================
+#  Docker 微服務示範系統  docker-compose.yml
+#  ---------------------------------------------------------------------------
+#  服務組成：
+#    nginx      : 反向代理 + 靜態網站（唯一對外開放的入口）
+#    node-api   : Node.js / Express API，唯一連線 PostgreSQL 的服務
+#    python-api : Python / FastAPI API（運算示範）
+#    rust-api   : Rust（標準函式庫）輕量 HTTP API
+#    db         : PostgreSQL 資料庫
+#
+#  網路隔離：
+#    webnet  : nginx <-> 三個 API
+#    datanet : node-api <-> db（internal，無對外網際網路）
+#
+#  使用方式：
+#    docker compose up -d --build
+#    瀏覽 http://localhost:8080
+# =============================================================================
+
+name: docker-demo
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 資料庫
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: demo-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-demo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-demo1234}
+      POSTGRES_DB: ${POSTGRES_DB:-demo}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      # 具名 volume：資料在容器刪除後仍然保留
+      - db-data:/var/lib/postgresql/data
+      # 首次啟動時自動執行的初始化 SQL
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - datanet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Node.js API（Express + pg）
+  # ---------------------------------------------------------------------------
+  node-api:
+    build:
+      context: ./services/node-api
+      dockerfile: Dockerfile
+    image: demo/node-api:1.0.0
+    container_name: demo-node-api
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      SERVICE_NAME: node-api
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-demo}:${POSTGRES_PASSWORD:-demo1234}@db:5432/${POSTGRES_DB:-demo}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - webnet
+      - datanet
+
+  # ---------------------------------------------------------------------------
+  # Python API（FastAPI + Uvicorn）
+  # ---------------------------------------------------------------------------
+  python-api:
+    build:
+      context: ./services/python-api
+      dockerfile: Dockerfile
+    image: demo/python-api:1.0.0
+    container_name: demo-python-api
+    restart: unless-stopped
+    environment:
+      PORT: 8000
+      SERVICE_NAME: python-api
+    networks:
+      - webnet
+
+  # ---------------------------------------------------------------------------
+  # Rust API（只用標準函式庫，無第三方 crate）
+  # ---------------------------------------------------------------------------
+  rust-api:
+    build:
+      context: ./services/rust-api
+      dockerfile: Dockerfile
+    image: demo/rust-api:1.0.0
+    container_name: demo-rust-api
+    restart: unless-stopped
+    environment:
+      PORT: 8080
+      SERVICE_NAME: rust-api
+    networks:
+      - webnet
+
+  # ---------------------------------------------------------------------------
+  # Nginx：反向代理 + 前端靜態網站（對外入口）
+  # ---------------------------------------------------------------------------
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    image: demo/nginx-web:1.0.0
+    container_name: demo-nginx
+    restart: unless-stopped
+    ports:
+      # 主機 8080 -> 容器 80
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      node-api:
+        condition: service_healthy
+      python-api:
+        condition: service_healthy
+      rust-api:
+        condition: service_healthy
+    networks:
+      - webnet
+
+volumes:
+  db-data:
+    name: demo-db-data
+
+networks:
+  webnet:
+    name: demo-webnet
+    driver: bridge
+  datanet:
+    name: demo-datanet
+    driver: bridge
+    internal: true   # 只能與同網路容器溝通，不能連外網

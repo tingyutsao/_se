@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Docker 微服務系統儀表板</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐳</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🐳</span>
+      <div>
+        <h1>Docker 微服務示範系統</h1>
+        <p class="subtitle">nginx（反向代理）· Node.js · Python · Rust · PostgreSQL</p>
+      </div>
+    </div>
+    <div class="status-area">
+      <div id="overall" class="pill pill-idle">檢查中…</div>
+      <button id="btn-refresh" type="button">立即更新</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- 架構說明 -->
+    <section class="panel">
+      <h2>系統架構</h2>
+      <pre class="diagram">
+        瀏覽器 (你)
+            │  http://localhost:8080
+            ▼
+   ┌──────────────────────────────────────────┐
+   │  nginx  ── 反向代理 + 靜態網站            │
+   │  /            → 本頁面（靜態檔案）        │
+   │  /api/node/   → node-api:3000            │
+   │  /api/python/ → python-api:8000          │
+   │  /api/rust/   → rust-api:8080            │
+   └───────┬──────────────┬──────────┬────────┘
+           │ webnet       │          │
+           ▼              ▼          ▼
+     node-api:3000   python-api:8000  rust-api:8080
+           │ datanet (唯一可連資料庫)
+           ▼
+     PostgreSQL:5432  ← 具名 volume 保存資料
+      </pre>
+      <p class="rule">規則：只有 nginx 對外開放埠號；三個 API 只在 Docker 內部網路上互相可見。</p>
+    </section>
+
+    <!-- 服務狀態卡片（由 app.js 產生） -->
+    <section>
+      <h2>服務狀態</h2>
+      <div class="grid" id="cards">
+        <article class="card skeleton">載入中…</article>
+      </div>
+    </section>
+
+    <!-- 互動區 -->
+    <section class="panel">
+      <h2>互動測試</h2>
+      <p class="rule">這些按鈕會真的穿過 nginx 反向代理，呼叫後端容器並讀寫 PostgreSQL。</p>
+      <div class="actions">
+        <button id="btn-visit" type="button" class="primary">＋ 記錄一次造訪（寫入 PostgreSQL）</button>
+        <button id="btn-visits" type="button">讀取造訪次數</button>
+        <button id="btn-primes" type="button">請 Python 計算 100 萬以下質數</button>
+        <button id="btn-events" type="button">讀取服務事件</button>
+      </div>
+      <div class="results">
+        <div>
+          <h3>造訪總數</h3>
+          <p id="out-visits" class="big">–</p>
+        </div>
+        <div>
+          <h3>Python 運算結果</h3>
+          <p id="out-primes" class="small">尚未執行</p>
+        </div>
+      </div>
+      <h3>動作記錄</h3>
+      <pre id="log" class="log">等待操作…</pre>
+    </section>
+
+    <!-- 原始 JSON -->
+    <section class="panel">
+      <h2>原始 JSON 回應</h2>
+      <p class="rule">直接看三個 API 回傳的內容（透過 nginx 代理）。</p>
+      <div class="tabs">
+        <button class="tab is-active" data-route="/api/node/info" type="button">node-api /info</button>
+        <button class="tab" data-route="/api/python/info" type="button">python-api /info</button>
+        <button class="tab" data-route="/api/rust/info" type="button">rust-api /info</button>
+        <button class="tab" data-route="/api/node/db" type="button">PostgreSQL /db</button>
+      </div>
+      <pre id="raw" class="raw">選擇上方端點…</pre>
+    </section>
+  </main>
+
+  <footer>
+    <p>
+      由 <code>docker compose up -d --build</code> 啟動 ·
+      共 5 個容器 · 2 個自訂網路 · 1 個具名 volume
+    </p>
+    <p class="muted">最後更新：<span id="last-updated">–</span>（每 10 秒自動更新）</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

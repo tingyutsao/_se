@@ -1,0 +1,16 @@
+# 根目錄的建置內容排除清單（nginx 映像檔的 build context 是專案根目錄）
+# 用意：不要把密碼、暫存檔、版控資料夾打進建置內容
+
+.env
+.git/
+.gitignore
+
+# 各服務的開發暫存
+**/node_modules/
+**/__pycache__/
+**/*.pyc
+**/target/
+
+# 文件
+README.md
+*.md

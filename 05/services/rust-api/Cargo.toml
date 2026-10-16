@@ -1,0 +1,19 @@
+[package]
+name = "rust-api"
+version = "1.0.0"
+edition = "2021"
+description = "Rust 微服務（只使用標準函式庫）"
+
+[[bin]]
+name = "rust-api"
+path = "src/main.rs"
+
+# 沒有第三方依賴，所以 cargo 不需要連 crates.io，建置更快也更安全
+[dependencies]
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"

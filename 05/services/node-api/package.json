@@ -1,0 +1,17 @@
+{
+  "name": "node-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Node.js (Express) REST API 微服務，負責與 PostgreSQL 溝通",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
+  }
+}
