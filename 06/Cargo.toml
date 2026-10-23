@@ -1,0 +1,16 @@
+[package]
+name = "todo-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.8"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tower-http = { version = "0.6", features = ["fs"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dev-dependencies]
+# 系統測試用:oneshot 把請求直接打進 Router
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"

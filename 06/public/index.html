@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>待辦清單</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <h1>待辦清單</h1>
+
+    <form id="add-form" data-testid="add-form">
+      <input
+        id="todo-input"
+        data-testid="todo-input"
+        type="text"
+        placeholder="要做什麼事情…"
+        autocomplete="off"
+      />
+      <button type="submit" data-testid="add-btn">新增</button>
+    </form>
+
+    <p id="error-msg" data-testid="error-msg" class="error" hidden></p>
+
+    <p id="count" data-testid="count" class="count"></p>
+
+    <ul id="todo-list" data-testid="todo-list" class="todo-list"></ul>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
