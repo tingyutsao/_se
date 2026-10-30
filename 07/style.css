@@ -1,0 +1,282 @@
+/* ================= SubKeeper 樣式 ================= */
+
+:root {
+  --bg: #f4f6fa;
+  --surface: #ffffff;
+  --surface2: #eef1f7;
+  --text: #1c2333;
+  --text-soft: #5d6b85;
+  --border: #dbe1ee;
+  --primary: #3556e0;
+  --primary-soft: #e5eaff;
+  --accent: #12a457;
+  --accent-soft: #e2f6ec;
+  --danger: #d64545;
+  --danger-soft: #fdeaea;
+  --warn: #e08a00;
+  --warn-soft: #fdf3e0;
+  --shadow: 0 1px 3px rgba(28, 35, 51, .08), 0 8px 24px rgba(28, 35, 51, .06);
+  --radius: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12141c;
+    --surface: #1b1e29;
+    --surface2: #232838;
+    --text: #e8ebf3;
+    --text-soft: #97a2bb;
+    --border: #2c3244;
+    --primary: #7d95ff;
+    --primary-soft: #26305a;
+    --accent: #3ecf8a;
+    --accent-soft: #17382a;
+    --danger: #f27575;
+    --danger-soft: #3a1f22;
+    --warn: #f0b04a;
+    --warn-soft: #3a2f18;
+    --shadow: 0 1px 3px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, -apple-system, sans-serif;
+  line-height: 1.55;
+}
+
+.wrap {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+/* ---------- 標頭 ---------- */
+.header h1 { font-size: 1.7rem; margin: 0 0 6px; }
+.subtitle { margin: 0 0 22px; color: var(--text-soft); font-size: .95rem; }
+
+/* ---------- 統計卡 ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+}
+
+.stat-card.accent { border-color: var(--accent); }
+.stat-label { font-size: .85rem; color: var(--text-soft); }
+.stat-value { font-size: 1.6rem; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.stat-card.accent .stat-value { color: var(--accent); }
+.stat-sub { font-size: .78rem; color: var(--text-soft); margin-top: 2px; }
+
+/* ---------- 面板 ---------- */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.panel h2 { font-size: 1.05rem; margin: 0 0 12px; }
+.panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.panel-head h2 { margin-bottom: 12px; }
+.hint { font-size: .8rem; color: var(--text-soft); }
+
+/* ---------- 表單 ---------- */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px 12px;
+}
+
+.field { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; }
+.field span { color: var(--text-soft); }
+.field input, .field select {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--text);
+  width: 100%;
+}
+
+.field input:focus, .field select:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.span2 { grid-column: span 2; }
+
+/* ---------- 按鈕 ---------- */
+.btn {
+  font: inherit;
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: filter .15s ease;
+}
+
+.btn:hover { filter: brightness(1.08); }
+.btn.primary { background: var(--primary); color: #fff; }
+.btn.primary:hover { filter: brightness(1.1); }
+
+.btn.ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.btn.ghost:hover { background: var(--surface2); }
+.btn.danger.ghost { color: var(--danger); border-color: var(--danger); }
+
+.btn.small {
+  font-size: .8rem;
+  padding: 5px 10px;
+  font-weight: 500;
+}
+
+/* ---------- 訂閱列表 ---------- */
+.sub-list { display: flex; flex-direction: column; gap: 8px; }
+
+.sub-row {
+  display: grid;
+  grid-template-columns: 1.4fr .9fr .9fr 1.1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface2);
+}
+
+.sub-row.soon { border-color: var(--warn); background: var(--warn-soft); }
+.sub-row.flagged { border-style: dashed; opacity: .82; }
+
+.sub-name { font-weight: 700; overflow-wrap: anywhere; }
+.sub-name .cat-chip {
+  display: inline-block;
+  font-size: .7rem;
+  font-weight: 500;
+  color: var(--text-soft);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 8px;
+  margin-left: 6px;
+  vertical-align: 1px;
+}
+
+.sub-flag {
+  display: inline-block;
+  font-size: .7rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.sub-amount, .sub-monthly { font-variant-numeric: tabular-nums; font-size: .92rem; }
+.sub-monthly { color: var(--text-soft); }
+.sub-next { font-size: .88rem; font-variant-numeric: tabular-nums; }
+.sub-next .days { display: block; font-size: .78rem; color: var(--text-soft); }
+
+.sub-row.soon .sub-next .days {
+  color: var(--warn);
+  font-weight: 700;
+}
+
+.sub-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.btn.flag-on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.btn.del { color: var(--danger); }
+.btn.del:hover { background: var(--danger-soft); }
+
+/* ---------- 空狀態 ---------- */
+.empty {
+  text-align: center;
+  color: var(--text-soft);
+  padding: 28px 10px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  font-size: .95rem;
+}
+.empty strong { color: var(--text); }
+
+/* ---------- 分類占比 ---------- */
+.cat-bars { display: flex; flex-direction: column; gap: 10px; }
+
+.cat-row { display: grid; grid-template-columns: 90px 1fr auto; gap: 10px; align-items: center; font-size: .88rem; }
+.cat-name { color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cat-bar { height: 12px; border-radius: 999px; background: var(--surface2); overflow: hidden; }
+.cat-fill { height: 100%; border-radius: 999px; background: var(--primary); min-width: 2px; transition: width .3s ease; }
+.cat-fill.top { background: var(--accent); }
+.cat-fig { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--text-soft); }
+.cat-fig strong { color: var(--text); }
+
+/* ---------- 工具列 / 頁尾 ---------- */
+.toolbar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+
+.footer { color: var(--text-soft); font-size: .8rem; border-top: 1px solid var(--border); padding-top: 14px; }
+.footer p { margin: 2px 0; }
+
+/* ---------- 提示訊息 ---------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: var(--bg);
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: .88rem;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+  z-index: 10;
+}
+
+.toast.show { opacity: 1; }
+
+/* ---------- RWD ---------- */
+@media (max-width: 720px) {
+  .stats { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: repeat(2, 1fr); }
+  .span2 { grid-column: span 2; }
+
+  .sub-row {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "name name"
+      "amount monthly"
+      "next next"
+      "actions actions";
+  }
+  .sub-name { grid-area: name; }
+  .sub-amount { grid-area: amount; }
+  .sub-monthly { grid-area: monthly; justify-self: end; }
+  .sub-next { grid-area: next; }
+  .sub-actions { grid-area: actions; justify-content: flex-end; }
+}
+
+@media (max-width: 420px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .span2 { grid-column: span 1; }
+  .stat-value { font-size: 1.35rem; }
+}

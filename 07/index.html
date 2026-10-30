@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="SubKeeper 訂閱管家：記錄所有訂閱服務，算出每月與每年總支出，扣款前提醒，找出可以取消的項目。資料只存在你的瀏覽器。" />
+  <title>SubKeeper 訂閱管家</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <h1>💳 SubKeeper 訂閱管家</h1>
+      <p class="subtitle">記錄訂閱、算清支出、留住你的錢。資料只存在你的瀏覽器，不需要註冊。</p>
+    </header>
+
+    <!-- 統計卡 -->
+    <section class="stats" aria-label="支出統計">
+      <div class="stat-card">
+        <div class="stat-label">每月支出</div>
+        <div class="stat-value" id="statMonthly">–</div>
+        <div class="stat-sub">所有訂閱換算為 TWD</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">每年支出</div>
+        <div class="stat-value" id="statYearly">–</div>
+        <div class="stat-sub">所有訂閱加總（TWD）</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">考慮取消每年可省</div>
+        <div class="stat-value" id="statSave">–</div>
+        <div class="stat-sub" id="statSaveCount">尚未標記任何項目</div>
+      </div>
+    </section>
+
+    <!-- 新增表單 -->
+    <section class="panel">
+      <h2>新增訂閱</h2>
+      <form id="subForm" autocomplete="off">
+        <div class="form-grid">
+          <label class="field span2">
+            <span>名稱 *</span>
+            <input type="text" id="fName" maxlength="40" placeholder="例如：Netflix" required />
+          </label>
+          <label class="field">
+            <span>金額 *</span>
+            <input type="number" id="fAmount" min="0.01" step="0.01" placeholder="例如：390" required />
+          </label>
+          <label class="field">
+            <span>幣別</span>
+            <select id="fCur">
+              <option value="TWD" selected>TWD 新台幣</option>
+              <option value="USD">USD 美元</option>
+              <option value="JPY">JPY 日圓</option>
+              <option value="EUR">EUR 歐元</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>扣款週期</span>
+            <select id="fCycle">
+              <option value="month" selected>每月</option>
+              <option value="quarter">每季</option>
+              <option value="year">每年</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>下次扣款日 *</span>
+            <input type="date" id="fNext" required />
+          </label>
+          <label class="field">
+            <span>分類</span>
+            <select id="fCat"></select>
+          </label>
+          <button type="submit" class="btn primary span2">＋ 新增訂閱</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 扣款時間表 -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2>扣款時間表</h2>
+        <span class="hint" id="listHint"></span>
+      </div>
+      <div id="subList" class="sub-list"></div>
+    </section>
+
+    <!-- 分類占比 -->
+    <section class="panel">
+      <h2>分類占比（每月換算）</h2>
+      <div id="catBars" class="cat-bars"></div>
+    </section>
+
+    <!-- 工具列 -->
+    <section class="toolbar">
+      <button type="button" id="btnSample" class="btn ghost">📋 載入範例資料</button>
+      <button type="button" id="btnClear" class="btn danger ghost">🗑️ 清空全部</button>
+    </section>
+
+    <footer class="footer">
+      <p>⚠️ 匯率為固定估計值：1 USD = 32、1 JPY = 0.21、1 EUR = 35 TWD，換算結果僅供參考。</p>
+      <p>🔒 資料以 localStorage 儲存在本機瀏覽器，不會上傳到任何伺服器。</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
