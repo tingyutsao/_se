@@ -1,0 +1,34 @@
+{
+  "name": "todo-cloudflare-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "npm run build && vite preview",
+    "deploy": "npm run build && wrangler deploy",
+    "cf-typegen": "wrangler types",
+    "db:local": "wrangler d1 migrations apply todo-db --local",
+    "db:remote": "wrangler d1 migrations apply todo-db --remote"
+  },
+  "dependencies": {
+    "hono": "^4.9.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.13.0",
+    "@cloudflare/workers-types": "^5.20261106.1",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "^5.9.0",
+    "vite": "^7.1.0",
+    "wrangler": "^4.42.0"
+  },
+  "allowScripts": {
+    "workerd@1.20261101.1": true,
+    "workerd@1.20261104.1": true,
+    "esbuild@0.28.2": true
+  }
+}
