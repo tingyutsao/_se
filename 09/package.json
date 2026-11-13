@@ -1,0 +1,52 @@
+{
+  "name": "hono-todo-d1",
+  "version": "1.0.1",
+  "description": "Reusable Hono todo-list REST API for Cloudflare Workers, backed by Cloudflare D1 (edge SQLite). Extracted from a real deployed todo app.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "npm run build && node test/smoke.mjs",
+    "prepublishOnly": "npm run build && node test/smoke.mjs"
+  },
+  "keywords": [
+    "hono",
+    "cloudflare",
+    "workers",
+    "d1",
+    "todo",
+    "todos",
+    "sqlite",
+    "rest",
+    "api",
+    "edge"
+  ],
+  "license": "MIT",
+  "author": "tyt2026",
+  "homepage": "https://todo-cloudflare-app.se08-111410555.workers.dev",
+  "sideEffects": false,
+  "dependencies": {
+    "hono": "^4.9.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261106.1",
+    "typescript": "^5.9.0"
+  }
+}
