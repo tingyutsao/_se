@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f6fb">
+  <meta name="description" content="StudyBox 把筆記變成 AI 摘要、選擇題與閃卡,用統計圖表找出最需要複習的地方。">
+  <title>StudyBox · AI 讀書助手</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%236d6bff'/%3E%3Cstop offset='1' stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='url(%23g)'/%3E%3Cpath d='M17 21c0-3 2-5 5-5h25v30H22c-3 0-5 2-5 5V21Z' fill='none' stroke='white' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M22 47h25M26 26h13M26 33h9' stroke='white' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body data-page="notes">
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/index.html" aria-label="StudyBox 首頁">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v17H7.5A2.5 2.5 0 0 0 5 21.5V4.5Z"/>
+            <path d="M5 18.5A2.5 2.5 0 0 1 7.5 16H20"/>
+            <path d="M9 6.5h7M9 10h5"/>
+          </svg>
+        </span>
+        <span class="brand-text">
+          <strong>StudyBox</strong>
+          <small>AI 讀書助手</small>
+        </span>
+      </a>
+
+      <nav class="main-nav" aria-label="主要導覽">
+        <a class="nav-link" href="/index.html" data-nav="notes">筆記庫</a>
+        <a class="nav-link" href="/study.html" data-nav="study">測驗與閃卡</a>
+        <a class="nav-link" href="/stats.html" data-nav="stats">學習統計</a>
+      </nav>
+
+      <div class="header-actions">
+        <a class="btn btn-primary btn-sm header-cta" href="/index.html?new=1" data-open-note>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          新增筆記
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <div class="hero-copy">
+        <p class="eyebrow">AI Study Workspace</p>
+        <h1>筆記放進來,<br><span class="gradient-text">實力長出來。</span></h1>
+        <p>貼上課堂筆記,讓 AI 幫你抓重點、出題、做成閃卡。每一次作答都會被記錄,用圖表看見自己正在進步。</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary btn-lg" type="button" data-open-note>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            新增第一篇筆記
+          </button>
+          <a class="btn btn-ghost btn-lg" href="/study.html">
+            開始複習
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="hero-points">
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg>免登入,立即開始</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg>資料存在 Cloudflare D1</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg>Workers AI 驅動</span>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-blob"></div>
+        <div class="demo-note">
+          <div class="demo-note-top">
+            <span class="subject-pill tone-1">生物</span>
+            <span class="demo-mini-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v17H7.5A2.5 2.5 0 0 0 5 21.5V4.5Z"/><path d="M5 18.5A2.5 2.5 0 0 1 7.5 16H20"/></svg>
+            </span>
+          </div>
+          <h3>細胞呼吸與能量</h3>
+          <div class="fake-lines">
+            <span class="fake-line w-92"></span>
+            <span class="fake-line w-80"></span>
+            <span class="fake-line w-64"></span>
+          </div>
+          <div class="tag-row">
+            <span class="tag">粒線體</span>
+            <span class="tag">ATP</span>
+            <span class="tag">糖解作用</span>
+          </div>
+        </div>
+
+        <div class="demo-ai">
+          <div class="demo-ai-head">
+            <span class="ai-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1L6.5 8.5l4.1-1.4L12 3Z"/><path d="M18.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"/></svg>
+              AI 摘要
+            </span>
+            重點已整理
+          </div>
+          <p>• 細胞呼吸將養分轉為 ATP<br>• 有氧呼吸主要在粒線體進行<br>• 糖解作用不需要氧氣</p>
+        </div>
+
+        <div class="demo-score">
+          <span>92%</span>
+          <small>熟練度</small>
+        </div>
+
+        <svg class="demo-star one" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2Z"/></svg>
+        <svg class="demo-star two" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2Z"/></svg>
+      </div>
+    </section>
+
+    <section class="container kpi-grid" aria-label="學習概況">
+      <article class="kpi-card">
+        <span class="kpi-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v17H7.5A2.5 2.5 0 0 0 5 21.5V4.5Z"/><path d="M5 18.5A2.5 2.5 0 0 1 7.5 16H20"/></svg>
+        </span>
+        <div class="kpi-copy">
+          <p class="kpi-label">筆記總數</p>
+          <p class="kpi-value" id="kpiNotes">—</p>
+          <p class="kpi-hint" id="kpiNotesHint">建立你的第一個學習空間</p>
+        </div>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-icon sky" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1.2 1.2L7 5"/><path d="m3.5 12 1.2 1.2L7 11"/><path d="m3.5 18 1.2 1.2L7 17"/></svg>
+        </span>
+        <div class="kpi-copy">
+          <p class="kpi-label">AI 題目</p>
+          <p class="kpi-value" id="kpiQuestions">—</p>
+          <p class="kpi-hint" id="kpiQuestionsHint">用題目測試理解程度</p>
+        </div>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-icon amber" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="16" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/></svg>
+        </span>
+        <div class="kpi-copy">
+          <p class="kpi-label">複習閃卡</p>
+          <p class="kpi-value" id="kpiCards">—</p>
+          <p class="kpi-hint" id="kpiCardsHint">翻面複習,加深記憶</p>
+        </div>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-icon green" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
+        </span>
+        <div class="kpi-copy">
+          <p class="kpi-label">整體答對率</p>
+          <p class="kpi-value" id="kpiAccuracy">—</p>
+          <p class="kpi-hint" id="kpiAccuracyHint">作答後自動計算</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="container notes-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Notes Library</p>
+          <h2>我的筆記庫</h2>
+          <p class="section-meta" id="notesCount">正在載入筆記…</p>
+        </div>
+        <div class="section-heading-actions">
+          <button class="btn btn-primary" type="button" data-open-note>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            新增筆記
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <label class="search-field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+          <input id="notesSearch" type="search" placeholder="搜尋標題、內容或關鍵字…" autocomplete="off" aria-label="搜尋筆記">
+          <button class="search-clear" id="searchClear" type="button" aria-label="清除搜尋" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>
+          </button>
+        </label>
+        <div class="chip-scroller" id="subjectChips" aria-label="依科目篩選"></div>
+      </div>
+
+      <div class="notes-grid" id="notesGrid" aria-live="polite"></div>
+      <div id="notesEmpty"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v17H7.5A2.5 2.5 0 0 0 5 21.5V4.5Z"/><path d="M5 18.5A2.5 2.5 0 0 1 7.5 16H20"/></svg>
+        </span>
+        StudyBox · 用 AI 把筆記變成實力
+      </div>
+      <div class="footer-links">
+        <a href="/study.html">測驗與閃卡</a>
+        <a href="/stats.html">學習統計</a>
+        <span>Built on Cloudflare Workers</span>
+      </div>
+    </div>
+  </footer>
+
+  <nav class="mobile-nav" aria-label="行動版導覽">
+    <a href="/index.html" data-nav="notes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v17H7.5A2.5 2.5 0 0 0 5 21.5V4.5Z"/><path d="M5 18.5A2.5 2.5 0 0 1 7.5 16H20"/></svg>
+      筆記庫
+    </a>
+    <a href="/study.html" data-nav="study">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1.2 1.2L7 5"/><path d="m3.5 12 1.2 1.2L7 11"/><path d="m3.5 18 1.2 1.2L7 17"/></svg>
+      測驗複習
+    </a>
+    <a href="/stats.html" data-nav="stats">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M8 16v-5M12.5 16V7M17 16v-3"/></svg>
+      學習統計
+    </a>
+  </nav>
+
+  <!-- 新增 / 編輯筆記 -->
+  <dialog class="modal" id="noteDialog" aria-labelledby="noteDialogTitle">
+    <form class="modal-card" id="noteForm">
+      <header class="modal-head">
+        <div>
+          <h2 id="noteDialogTitle">新增筆記</h2>
+          <p>把上課內容貼進來,之後就能一鍵產生摘要、題目與閃卡。</p>
+        </div>
+        <div class="modal-head-actions">
+          <button class="icon-btn" type="button" data-close aria-label="關閉">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
+      </header>
+      <div class="modal-body">
+        <div class="form-grid">
+          <input id="noteId" type="hidden" value="">
+          <div class="form-row">
+            <label class="field">
+              <span>科目</span>
+              <input class="input" id="noteSubject" list="subjectOptions" maxlength="30" placeholder="例如:生物、微積分">
+              <small>用來分類與統計弱點,留空會歸類為「一般」。</small>
+            </label>
+            <label class="field">
+              <span>標題</span>
+              <input class="input" id="noteTitle" maxlength="100" required placeholder="例如:第三章 細胞呼吸">
+              <small>簡短描述這篇筆記的主題。</small>
+            </label>
+          </div>
+          <label class="field">
+            <span>筆記內容</span>
+            <textarea class="textarea" id="noteContent" maxlength="20000" required placeholder="貼上課堂筆記、課本重點或整理後的內容…"></textarea>
+            <span class="field-foot">
+              <span>內容越完整,AI 產生的摘要與題目越精準。</span>
+              <span class="char-count" id="contentCount">0 / 20000</span>
+            </span>
+          </label>
+        </div>
+        <datalist id="subjectOptions">
+          <option value="國文"></option>
+          <option value="英文"></option>
+          <option value="數學"></option>
+          <option value="自然"></option>
+          <option value="社會"></option>
+          <option value="歷史"></option>
+          <option value="地理"></option>
+          <option value="公民"></option>
+          <option value="物理"></option>
+          <option value="化學"></option>
+          <option value="生物"></option>
+          <option value="程式設計"></option>
+        </datalist>
+      </div>
+      <footer class="modal-footer">
+        <button class="btn btn-ghost" type="button" data-close>取消</button>
+        <button class="btn btn-primary" type="submit" id="noteSubmit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg>
+          儲存筆記
+        </button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- 筆記詳情 -->
+  <dialog class="modal modal-wide" id="detailDialog" aria-labelledby="detailTitle">
+    <div class="modal-card">
+      <header class="modal-head detail-head">
+        <div class="detail-heading">
+          <div class="detail-badges">
+            <span class="subject-pill" id="detailSubject"></span>
+            <span class="pin-flag" id="detailPinFlag" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l-1 6 4 4v2H6v-2l4-4-1-6Z"/><path d="M12 15v6"/></svg>
+              已釘選
+            </span>
+          </div>
+          <h2 id="detailTitle">筆記詳情</h2>
+          <p class="meta" id="detailMeta"></p>
+        </div>
+        <div class="modal-head-actions">
+          <button class="icon-btn" id="detailPin" type="button" aria-label="釘選筆記"></button>
+          <button class="icon-btn" type="button" data-close aria-label="關閉">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
+      </header>
+      <div class="detail-body" id="detailBody">
+        <div class="detail-loading">
+          <span class="skeleton"></span>
+          <span class="skeleton"></span>
+          <span class="skeleton"></span>
+        </div>
+      </div>
+      <footer class="detail-footer" id="detailActions"></footer>
+    </div>
+  </dialog>
+
+  <!-- 確認對話框 -->
+  <dialog class="confirm-dialog" id="confirmDialog" aria-labelledby="confirmTitle">
+    <div class="confirm-card">
+      <div class="confirm-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      </div>
+      <h2 id="confirmTitle">請確認</h2>
+      <p id="confirmMessage"></p>
+      <div class="confirm-actions">
+        <button class="btn btn-ghost" type="button" data-close data-confirm-cancel>取消</button>
+        <button class="btn btn-danger" type="button" id="confirmOk">確認</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast-root" id="toastRoot" aria-live="polite" aria-atomic="false"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>

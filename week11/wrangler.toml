@@ -1,0 +1,30 @@
+# StudyBox · Cloudflare Workers 設定
+# 第一次部署前,請把 database_id 換成 `npx wrangler d1 create studybox-db` 輸出的值。
+name = "studybox"
+main = "src/index.js"
+compatibility_date = "2026-11-20"
+workers_dev = true
+upload_source_maps = true
+
+# 由同一個 Worker 提供 /public 底下的靜態頁面
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+# Workers AI 綁定(不需要額外的 API 金鑰)
+[ai]
+binding = "AI"
+
+# D1 資料庫綁定
+[[d1_databases]]
+binding = "DB"
+database_name = "studybox-db"
+database_id = "87087913-8e06-4b5b-8d1d-391190c38934"
+
+[vars]
+# 可替換成其他 Workers AI 文字模型
+AI_MODEL = "@cf/meta/llama-3.1-8b-instruct-fast"
+
+[observability]
+enabled = true

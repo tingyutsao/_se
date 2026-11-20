@@ -2,17 +2,9 @@
 
 > 把筆記貼進來,AI 幫你整理重點、出題考你、做成閃卡,再用圖表告訴你哪裡最需要複習。
 >
-> 全端網站,部署於 Cloudflare Workers,使用 D1 資料庫與 Workers AI。
+> 全端網站,以 Cloudflare Workers 部署,搭配 D1 資料庫與 Workers AI。
 
-| 欄位 | 內容 |
-| --- | --- |
-| 課程 | 現代軟體工程(課程名稱 / 學期) |
-| 作業 | 期末專案 |
-| 學生 | (姓名) |
-| 學號 | (學號) |
-| 線上網址 | `https://studybox.<帳號>.workers.dev`(部署後填入) |
-| 原始碼 | `https://github.com/<帳號>/studybox` |
-| 預計報告時間 | 約 8 分鐘 |
+網址：<https://studybox.se08-111410555.workers.dev>
 
 ---
 
@@ -62,7 +54,7 @@ graph TD
 
 ### 資料流程(以「AI 出題」為例)
 
-1. 使用者在筆記頁按下「產生題目」。
+1. 使用者在筆記詳情頁按下「AI 出題」(或在「測驗複習」頁按「AI 出題」)。
 2. 前端呼叫 `POST /api/notes/:id/questions`。
 3. Worker 從 D1 讀出筆記內容,組成提示詞,呼叫 Workers AI。
 4. 檢查 AI 回傳的格式是否正確(題目、四個選項、答案索引)。
@@ -89,7 +81,7 @@ graph TD
 | `title` | text | 標題 |
 | `content` | text | 筆記內容 |
 | `summary` | text | AI 摘要(可為空) |
-| `keywords` | text | AI 關鍵字,JSON 陣列 |
+| `keywords` | text | AI 關鍵字;資料庫存 JSON 字串,API 回傳時轉為陣列 |
 | `pinned` | integer | 是否釘選(0 / 1) |
 | `created_at` | text | 建立時間 |
 
@@ -100,7 +92,7 @@ graph TD
 | `id` | integer | 主鍵 |
 | `note_id` | integer | 所屬筆記 |
 | `question` | text | 題目 |
-| `options` | text | 四個選項,JSON 陣列 |
+| `options` | text | 四個選項;資料庫存 JSON 字串,API 回傳時轉為陣列 |
 | `answer` | integer | 正確選項索引(0–3) |
 | `explanation` | text | 解析 |
 
@@ -111,6 +103,8 @@ graph TD
 | `attempts` | `id`、`question_id`、`is_correct`、`created_at` |
 | `cards` | `id`、`note_id`、`front`、`back`、`remembered`、`forgotten` |
 
+> `pinned`、`is_correct` 在資料庫中以 `0 / 1` 儲存。題目在作答前,API 不會回傳 `answer` 與 `explanation`,避免提前看到解答。
+
 完整建表語法請見 `schema.sql`。
 
 ## 🔌 5. API 規格
@@ -119,6 +113,7 @@ graph TD
 | --- | --- | --- |
 | `GET` | `/api/health` | 健康檢查 |
 | `GET` | `/api/notes` | 筆記列表,支援 `?q=` 搜尋、`?subject=` 篩選 |
+| `GET` | `/api/notes/:id` | 取得單篇筆記(含題目與閃卡) |
 | `POST` | `/api/notes` | 新增筆記 |
 | `PUT` | `/api/notes/:id` | 修改筆記(含釘選) |
 | `DELETE` | `/api/notes/:id` | 刪除筆記 |
@@ -128,6 +123,58 @@ graph TD
 | `POST` | `/api/questions/:id/answer` | 送出答案並記錄結果 |
 | `POST` | `/api/cards/:id/review` | 記錄「記得 / 不記得」 |
 | `GET` | `/api/stats` | 學習統計資料 |
+
+### 主要請求欄位
+
+| 路徑 | 方法 | 請求本體 |
+| --- | --- | --- |
+| `/api/notes` | `POST` | `{ "subject": "生物", "title": "細胞呼吸", "content": "..." }` |
+| `/api/notes/:id` | `PUT` | 可只包含要更新的欄位:`subject`、`title`、`content`、`pinned`(`0 / 1` 或 `true / false`) |
+| `/api/questions/:id/answer` | `POST` | `{ "answer": 2 }`(`0–3`,也可傳字串 `"2"`) |
+| `/api/cards/:id/review` | `POST` | `{ "remembered": true }` |
+
+> `summarize`、`questions`、`cards` 三個 AI 端點不需要請求本體,只要路徑中的筆記 `id`。
+> `GET /api/notes/:id` 會回傳筆記,加上 `questions`(**不含**答案與解析)與 `cards`,供前端重新整理後還原詳情。
+
+### 統計回傳結構(`GET /api/stats`)
+
+```json
+{
+  "ok": true,
+  "data": {
+    "totals": {
+      "notes": 3,
+      "questions": 6,
+      "cards": 10,
+      "attempts": 12,
+      "correct": 8,
+      "accuracy": 67,
+      "remembered": 4,
+      "forgotten": 2,
+      "reviews": 6
+    },
+    "subjects": [
+      { "subject": "生物", "attempts": 12, "correct": 8, "accuracy": 67, "note_count": 1 }
+    ],
+    "daily": [
+      { "date": "2026-11-20", "label": "11/20", "attempts": 3, "correct": 2, "accuracy": 67 }
+    ],
+    "recent": [
+      {
+        "id": 1,
+        "is_correct": 1,
+        "created_at": "2026-11-20T04:00:00.000Z",
+        "question": "...",
+        "note_title": "...",
+        "subject": "生物"
+      }
+    ],
+    "generated_at": "2026-11-20T04:00:00.000Z"
+  }
+}
+```
+
+> `daily` 固定回傳最近 7 天(以 `Asia/Taipei` 計算),沒有作答的日子補 0;`subjects` 只列出有作答紀錄的科目。
 
 成功回應:
 
@@ -141,12 +188,16 @@ graph TD
 { "ok": false, "error": "AI_INVALID_OUTPUT", "message": "AI 回傳的格式不正確,請重試" }
 ```
 
+常見 `error` 代碼:`VALIDATION_ERROR`(欄位錯誤)、`INVALID_JSON`、`PAYLOAD_TOO_LARGE`、`NOT_FOUND`、`METHOD_NOT_ALLOWED`、`AI_UNAVAILABLE`、`AI_INVALID_OUTPUT`、`AI_TIMEOUT`、`INTERNAL_ERROR`。
+
 ## 📂 6. 專案目錄結構
 
 ```text
 studybox/
 ├── wrangler.toml          # Workers 設定:D1、AI 綁定、靜態資源目錄
 ├── package.json           # dev / deploy / db 指令
+├── package-lock.json      # 套件版本鎖定
+├── .gitignore             # 忽略 node_modules、.wrangler 等本機檔案
 ├── schema.sql             # 資料表定義
 ├── src/
 │   ├── index.js           # Worker 入口:API 路由 + 靜態資源
@@ -171,14 +222,20 @@ studybox/
 ### 本機開發
 
 ```bash
+# 若已取得專案資料夾,直接 cd 進入即可,不需要 clone
 git clone https://github.com/<帳號>/studybox.git
 cd studybox
 npm install
+
+# Workers AI 連的是遠端服務,本機要測試 AI 功能也必須先登入
+npx wrangler login
 
 # 建立本機資料表並啟動
 npx wrangler d1 execute studybox-db --local --file=./schema.sql
 npx wrangler dev
 ```
+
+也可以用 `npm run db:init` 代替建表指令、`npm run dev` 代替啟動指令。
 
 開啟 http://localhost:8787 。
 
@@ -190,6 +247,9 @@ npx wrangler d1 create studybox-db      # 將輸出的 database_id 填入 wrangl
 npx wrangler d1 execute studybox-db --remote --file=./schema.sql
 npx wrangler deploy
 ```
+
+> `wrangler.toml` 目前已填入真實 `database_id`。若你重新建立 D1 資料庫,請把 `npx wrangler d1 create studybox-db` 回傳的新 ID 貼回 `wrangler.toml`,並再次執行遠端 `schema.sql`。
+> AI 模型預設為 `@cf/meta/llama-3.1-8b-instruct-fast`,若要更換可修改 `wrangler.toml` 的 `[vars] AI_MODEL`。
 
 部署完成後,Wrangler 會印出 `*.workers.dev` 網址。
 
@@ -206,48 +266,39 @@ npx wrangler deploy
 
 ## 🧪 9. 功能測試
 
-開發完成後,逐項手動測試並更新結果:
+測試環境:本機 `wrangler dev` + 本機 D1 + 實際 Workers AI;以 Chrome 模擬 1440 / 768 / 390 三種寬度。測試日期:2026-11-20。
 
 | 測試項目 | 測試結果 |
 | --- | --- |
-| 新增 / 編輯 / 刪除筆記 | 尚未測試 |
-| 搜尋與科目篩選 | 尚未測試 |
-| 釘選筆記 | 尚未測試 |
-| AI 摘要 | 尚未測試 |
-| AI 出題 | 尚未測試 |
-| 作答與批改 | 尚未測試 |
-| 閃卡翻面與標記 | 尚未測試 |
-| 統計圖表數字正確 | 尚未測試 |
-| AI 回傳格式錯誤時的錯誤提示 | 尚未測試 |
-| 手機版 / 平板 / 桌機版面 | 尚未測試 |
+| 新增 / 編輯 / 刪除筆記 | ✅ 通過 |
+| 搜尋與科目篩選 | ✅ 通過(含找不到結果的空狀態) |
+| 釘選筆記 | ✅ 通過(重新整理後仍排在筆記庫最前面) |
+| AI 摘要 | ✅ 通過(實際呼叫 Workers AI,產出繁體中文重點與關鍵字) |
+| AI 出題 | ✅ 通過(3 題,每題 4 個選項與解析) |
+| 作答與批改 | ✅ 通過(答對 / 答錯皆記錄並顯示解析) |
+| 閃卡翻面與標記 | ✅ 通過(5 張,「記得 / 不記得」皆寫入 D1) |
+| 統計圖表數字正確 | ✅ 通過(近 7 天、科目正確率與作答數同步更新) |
+| AI 失敗時的錯誤提示 | ✅ 通過(以無效模型觸發 502 / `AI_UNAVAILABLE`,畫面顯示錯誤提示,按鈕回復可用、對話框未中斷) |
+| 手機版 / 平板 / 桌機版面 | ✅ 通過(390 / 768 / 1440 皆無水平捲動,彈窗與底部導覽正常) |
 
 ### 驗收檢查表
 
-- [ ] `GET /api/health` 回傳 `ok: true`
-- [ ] 重新整理頁面後,筆記與紀錄仍然保留(D1 持久化)
-- [ ] AI 產生的題目有 4 個選項,且有正確答案
-- [ ] 答錯題目後,統計頁的答對率會同步更新
-- [ ] AI 失敗時,畫面顯示錯誤提示而不是當掉
-- [ ] 1440 / 768 / 390 三種寬度沒有水平捲動
+- [x] `GET /api/health` 回傳 `ok: true`
+- [x] 重新整理頁面後,筆記與紀錄仍然保留(D1 持久化)
+- [x] AI 產生的題目有 4 個選項,且有正確答案
+- [x] 答錯題目後,統計頁的答對率會同步更新
+- [x] AI 失敗時,畫面顯示錯誤提示而不是當掉
+- [x] 1440 / 768 / 390 三種寬度沒有水平捲動
 
-## 🤖 10. AI 輔助開發說明
-
-本專案以 AI 輔助規劃與撰寫程式碼。開發流程:
-
-1. 先自行決定功能範圍與資料表設計(見本文件第 4、5 節)。
-2. 依 README 的規格,請 AI 分模組產生程式碼(資料庫、API、前端各自獨立)。
-3. 自行閱讀、執行並手動測試,發現問題再請 AI 修正。
-
-(請依實際開發情況修改。)
-
-## ⚠️ 11. 目前限制
+## ⚠️ 10. 目前限制
 
 - 沒有使用者登入,所有資料屬於同一個使用者。
 - AI 產生的題目可能有錯誤或不夠精確,仍需自行判斷。
-- 題目數量與筆記長度受 Workers AI 的輸入限制影響。
+- 單篇筆記最多 20,000 字;送給 AI 時會節錄前 6,500 字,避免超過模型輸入限制。
+- 即使使用 `wrangler dev`,Workers AI 仍會呼叫遠端服務,需先 `npx wrangler login`,且可能產生用量。
 - 免費方案的 D1 與 Workers AI 有每日用量上限。
 
-## 🔮 12. 未來改進方向
+## 🔮 11. 未來改進方向
 
 - 加入使用者登入,支援多人使用。
 - 依遺忘曲線安排複習時間(間隔重複)。
@@ -255,20 +306,8 @@ npx wrangler deploy
 - 匯出摘要與題目為 PDF。
 - 深色模式。
 
-## 📝 13. 專案成果與心得
+## 📝 12. 專案成果與心得
 
-(完成專案後填寫:實作了什麼、遇到什麼困難、學到什麼。)
+完成筆記 CRUD、科目分類與搜尋、AI 摘要/出題/閃卡、作答批改與學習統計,並確保資料保存在 D1、三個頁面在手機與桌機都能正常使用。
 
-## 🔗 14. 專案連結
-
-| 項目 | 連結 |
-| --- | --- |
-| GitHub | `https://github.com/<帳號>/studybox` |
-| 線上展示 | `https://studybox.<帳號>.workers.dev` |
-
-## 📚 15. 參考資料
-
-- [Cloudflare Workers 文件](https://developers.cloudflare.com/workers/)
-- [Cloudflare D1 文件](https://developers.cloudflare.com/d1/)
-- [Cloudflare Workers AI 文件](https://developers.cloudflare.com/workers-ai/)
-- 課程範例:[rucloud](https://rucloud.cc/)、[EdgeMemo](https://edgememo.edgememo.workers.dev/)
+遇到比較棘手的問題是 AI 回傳格式不穩定、作答前不能洩漏答案,以及手機版對話框與底部導覽的顯示時機。透過格式驗證、API 層過濾欄位與實際瀏覽器測試逐一解決,也學到 Workers、D1、Workers AI 與靜態資源整合的完整流程,以及部署前必須先建立遠端資料庫並填入真實 `database_id`。
