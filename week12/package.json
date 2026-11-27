@@ -1,0 +1,25 @@
+{
+  "name": "llm-to-agent",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "從 LLM API 到 Agent 的漸進式教學範例（無金鑰也能跑）",
+  "scripts": {
+    "01": "node 01-chat.mjs",
+    "02": "node 02-history.mjs",
+    "03": "node 03-tools.mjs",
+    "04": "node 04-agent.mjs",
+    "05": "node 05-cli-agent.mjs",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20.12"
+  },
+  "keywords": [
+    "llm",
+    "agent",
+    "tool-calling",
+    "education"
+  ],
+  "license": "MIT"
+}
